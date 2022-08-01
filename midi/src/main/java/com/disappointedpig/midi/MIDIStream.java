@@ -126,7 +126,7 @@ class MIDIStream {
 
     public boolean connectionMatch(Bundle r) {
         boolean match = false;
-        if(r != null) {
+        if(r != null && rinfo1 != null && rinfo2 != null) {
             Log.d(TAG, "connectionMatch " + r.toString() + " ? " + rinfo1.toString() + "/" + rinfo2.toString());
 
             if (rinfo1 == null || rinfo2 == null) {

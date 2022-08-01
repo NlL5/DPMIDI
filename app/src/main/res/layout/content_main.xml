@@ -31,12 +31,13 @@
             android:checked="false"
             />
         <ToggleButton
+            android:id="@+id/backgroundToggleButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Background"
-            android:id="@+id/backgroundToggleButton"
             android:checked="false"
-            />
+            android:text="Background"
+            android:textOff="Run in Background: OFF"
+            android:textOn="Run in Background: ON" />
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"

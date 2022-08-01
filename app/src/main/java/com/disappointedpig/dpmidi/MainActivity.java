@@ -57,8 +57,9 @@ public class MainActivity extends AppCompatActivity {
 
             try {
                 service.registerActivity(MainActivity.this, listener);
+                setButtonStates();
             } catch (Throwable t) {
-
+                System.err.println(t);
             }
         }
 
@@ -73,13 +74,10 @@ public class MainActivity extends AppCompatActivity {
     ToggleButton midiSessionToggle, cmServiceToggle, backgroundToggleButton, reconnectToggleButton;
     TextView midiStatusTextView;
 
-    Button midiInviteButton, midiEndConnectionButton, openABButton;
+    Button midiInviteButton, midiEndConnectionButton, openABButton, testHeartbeat;
 
     TextView midiConnectionStatusTextView;
 
-    Button testheartbeat;
-
-    boolean useReconnect = false;
 //    ArrayList<MIDIDebugEvent> activityList=new ArrayList<MIDIDebugEvent>();
 
 //    ArrayAdapter<MIDIDebugEvent> adapter;
@@ -105,6 +103,8 @@ public class MainActivity extends AppCompatActivity {
         // bind to CMS
 //        bindService(new Intent(this, ConnectionManagerService.class), svcConn, BIND_AUTO_CREATE);
 
+        sharedpreferences = DPMIDIApplication.getAppContext().getSharedPreferences("SCPreferences", Context.MODE_PRIVATE);
+
         cmServiceToggle = (ToggleButton) findViewById(R.id.cmServiceToggleButton);
 
         midiInviteButton = (Button) findViewById(R.id.midiInviteButton);
@@ -117,8 +117,8 @@ public class MainActivity extends AppCompatActivity {
 
         midiConnectionStatusTextView = (TextView) findViewById(R.id.midiConnectionStatus);
 
-        testheartbeat = (Button) findViewById(R.id.testheartbeat);
-        testheartbeat.setOnClickListener(new View.OnClickListener() {
+        testHeartbeat = (Button) findViewById(R.id.testheartbeat);
+        testHeartbeat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 //                ConnectionManager.GetInstance().testHeartbeat();
@@ -146,8 +146,6 @@ public class MainActivity extends AppCompatActivity {
 
         backgroundToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                SharedPreferences sharedpreferences = DPMIDIApplication.getAppContext().getSharedPreferences("SCPreferences", Context.MODE_PRIVATE);
-
                 if (isChecked) {
                     ((DPMIDIApplication) getApplicationContext()).setRunInBackground(true);
 //                    sharedpreferences.edit().putBoolean(Constants.PREF.MIDI_STATE_PREF, true).apply();
@@ -162,7 +160,6 @@ public class MainActivity extends AppCompatActivity {
 
         midiSessionToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                SharedPreferences sharedpreferences = DPMIDIApplication.getAppContext().getSharedPreferences("SCPreferences", Context.MODE_PRIVATE);
                 if (isChecked) {
                     sharedpreferences.edit().putBoolean(Constants.PREF.MIDI_STATE_PREF,true).commit();
                     Intent startIntent = new Intent(MainActivity.this, ConnectionManagerService.class);
@@ -180,7 +177,8 @@ public class MainActivity extends AppCompatActivity {
         reconnectToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 //                MIDISession.getInstance().setAutoReconnect(isChecked);
-                useReconnect = isChecked;
+                sharedpreferences.edit().putBoolean(Constants.PREF.RECONNECT_STATE_PREF, isChecked).commit();
+
             }
         });
 
@@ -190,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
                 Bundle rinfo = new Bundle();
                 rinfo.putString(MIDIConstants.RINFO_ADDR,"10.209.1.175");
                 rinfo.putInt(MIDIConstants.RINFO_PORT,5004);
-                rinfo.putBoolean(MIDIConstants.RINFO_RECON, useReconnect);
+                rinfo.putBoolean(MIDIConstants.RINFO_RECON, sharedpreferences.getBoolean(Constants.PREF.RECONNECT_STATE_PREF, false));
                 MIDISession.getInstance().connect(rinfo);
             }
         });
@@ -201,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
                 Bundle rinfo = new Bundle();
                 rinfo.putString(MIDIConstants.RINFO_ADDR,"10.209.1.175");
                 rinfo.putInt(MIDIConstants.RINFO_PORT,5004);
-                rinfo.putBoolean(MIDIConstants.RINFO_RECON, useReconnect);
+                rinfo.putBoolean(MIDIConstants.RINFO_RECON, sharedpreferences.getBoolean(Constants.PREF.RECONNECT_STATE_PREF, false));
                 MIDISession.getInstance().disconnect(rinfo);
             }
         });
@@ -224,26 +222,24 @@ public class MainActivity extends AppCompatActivity {
                 startActivityForResult(intent, 1);
             }
         });
-        SharedPreferences sharedpreferences = DPMIDIApplication.getAppContext().getSharedPreferences("SCPreferences", Context.MODE_PRIVATE);
 
-//        if(service.cmsIsRunning() == true) {
-        if(service != null) {
-            cmServiceToggle.setChecked(service.cmsIsRunning());
-            midiSessionToggle.setChecked(sharedpreferences.getBoolean(Constants.PREF.MIDI_STATE_PREF, false));
-            backgroundToggleButton.setChecked(sharedpreferences.getBoolean(Constants.PREF.BACKGROUND_STATE_PREF, false));
-        }
+        setButtonStates();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        SharedPreferences sharedpreferences = DPMIDIApplication.getAppContext().getSharedPreferences("SCPreferences", Context.MODE_PRIVATE);
 
+        setButtonStates();
+    }
+
+    private void setButtonStates() {
 //        if(service.cmsIsRunning() == true) {
         if(service != null) {
             cmServiceToggle.setChecked(service.cmsIsRunning());
             midiSessionToggle.setChecked(sharedpreferences.getBoolean(Constants.PREF.MIDI_STATE_PREF, false));
             backgroundToggleButton.setChecked(sharedpreferences.getBoolean(Constants.PREF.BACKGROUND_STATE_PREF, false));
+            reconnectToggleButton.setChecked(sharedpreferences.getBoolean(Constants.PREF.RECONNECT_STATE_PREF, false));
         }
 //        }
     }
@@ -386,5 +382,3 @@ public class MainActivity extends AppCompatActivity {
     };
 
 }
-
-

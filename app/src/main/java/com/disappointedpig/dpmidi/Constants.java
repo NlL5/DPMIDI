@@ -17,6 +17,7 @@ public class Constants {
         public static final String SHAREDPREFERENCES_KEY = "SCPreferences";
         public static final String MIDI_STATE_PREF = "com.disappointedpig.stagecaller.pref.MIDIState";
         public static final String BACKGROUND_STATE_PREF = "com.disappointedpig.stagecaller.pref.BackgroundState";
+        public static final String RECONNECT_STATE_PREF = "com.disappointedpig.stagecaller.pref.ReconnectState";
     }
     public interface NOTIFICATION_ID {
         public static int CONNECTIONMGR = 1120;

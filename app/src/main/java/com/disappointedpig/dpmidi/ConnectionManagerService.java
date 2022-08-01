@@ -213,7 +213,7 @@ public class ConnectionManagerService extends Service implements DPMIDIForegroun
         } else {
             Bitmap icon = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
 
-            Notification notification = new android.support.v4.app.NotificationCompat.Builder(this)
+            Notification notification = new android.support.v4.app.NotificationCompat.Builder(this, "")
                     .setContentTitle("StageCaller")
                     .setTicker("StageCaller")
                     .setContentText("stagecaller")

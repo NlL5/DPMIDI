@@ -931,7 +931,7 @@ public class MIDISession {
     }
 
     public String version() {
-        return BuildConfig.VERSION_NAME;
+        return BuildConfig.LIBRARY_PACKAGE_NAME;
     }
 
     // TODO : make this actually work...
