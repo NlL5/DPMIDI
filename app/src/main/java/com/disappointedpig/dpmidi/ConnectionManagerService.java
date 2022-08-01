@@ -51,8 +51,8 @@ public class ConnectionManagerService extends Service implements DPMIDIForegroun
 
     public ConnectionManagerService() {
         Log.i(TAG, "--------------------------\n    init cms\n--------------------------\n");
-        wifiLock = ((WifiManager) DPMIDIApplication.getAppContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE)).createWifiLock(WifiManager.WIFI_MODE_FULL, "stagecallerWIFILock");
-        wakeLock = ((PowerManager) DPMIDIApplication.getAppContext().getSystemService(Context.POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "stagecallerWakeLock");
+        wifiLock = ((WifiManager) DPMIDIApplication.getAppContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE)).createWifiLock(WifiManager.WIFI_MODE_FULL, "stagecaller:WIFILock");
+        wakeLock = ((PowerManager) DPMIDIApplication.getAppContext().getSystemService(Context.POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "stagecaller:WakeLock");
 
         Process.setThreadPriority(Process.THREAD_PRIORITY_DEFAULT);
 
