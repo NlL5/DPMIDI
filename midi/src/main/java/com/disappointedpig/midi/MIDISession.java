@@ -13,7 +13,6 @@ import android.net.nsd.NsdServiceInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.util.ArrayMap;
 import android.util.Log;
 import android.util.SparseArray;
 
@@ -46,6 +45,7 @@ import net.rehacktive.waspdb.WaspObserver;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.greenrobot.eventbus.android.BuildConfig;
 
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -66,6 +66,8 @@ import static com.disappointedpig.midi.MIDIConstants.RINFO_ADDR;
 import static com.disappointedpig.midi.MIDIConstants.RINFO_FAIL;
 import static com.disappointedpig.midi.MIDIConstants.RINFO_PORT;
 import static com.disappointedpig.midi.MIDIConstants.RINFO_RECON;
+
+import androidx.collection.ArrayMap;
 
 public class MIDISession {
 

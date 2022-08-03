@@ -1,18 +1,12 @@
 package com.disappointedpig.dpmidi;
 
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.app.AppCompatDialogFragment;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 
 import com.disappointedpig.midi.MIDIAddressBookEntry;
 import com.disappointedpig.midi.MIDISession;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -21,6 +15,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.disappointedpig.dpmidi.Constants.AB_DIALOG_FRAGMENT_KEY;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDialogFragment;
+import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.DividerItemDecoration;
 
 public class AddressBook extends AppCompatActivity implements AddressBookDialog.AddressBookDialogListener {
 

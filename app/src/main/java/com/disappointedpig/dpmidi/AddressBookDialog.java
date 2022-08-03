@@ -6,9 +6,6 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatDialogFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,6 +20,10 @@ import static com.disappointedpig.midi.MIDIConstants.RINFO_ADDR;
 import static com.disappointedpig.midi.MIDIConstants.RINFO_NAME;
 import static com.disappointedpig.midi.MIDIConstants.RINFO_PORT;
 import static com.disappointedpig.midi.MIDIConstants.RINFO_RECON;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatDialogFragment;
 
 public class AddressBookDialog extends AppCompatDialogFragment {
 

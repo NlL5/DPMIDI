@@ -63,7 +63,7 @@ public class ConnectionManager {
     public ConnectionManager() {
         MIDIState = ConnectionState.NOT_RUNNING;
         OSCState = ConnectionState.NOT_RUNNING;
-        wifiLock = ((WifiManager) DPMIDIApplication.getAppContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE)).createWifiLock(WifiManager.WIFI_MODE_FULL, "dpmidiWIFILock");
+        wifiLock = ((WifiManager) DPMIDIApplication.getAppContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE)).createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "dpmidiWIFILock");
         EventBus.getDefault().register(this);
     }
 

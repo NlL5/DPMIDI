@@ -20,8 +20,6 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
 import android.os.Process;
-import android.support.annotation.RequiresApi;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 
@@ -32,6 +30,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static android.app.NotificationManager.IMPORTANCE_HIGH;
 import static com.disappointedpig.dpmidi.ConnectionState.NOT_RUNNING;
+
+import androidx.annotation.RequiresApi;
+import androidx.core.app.NotificationCompat;
 
 public class ConnectionManagerService extends Service implements DPMIDIForeground.Listener {
 
@@ -51,7 +52,7 @@ public class ConnectionManagerService extends Service implements DPMIDIForegroun
 
     public ConnectionManagerService() {
         Log.i(TAG, "--------------------------\n    init cms\n--------------------------\n");
-        wifiLock = ((WifiManager) DPMIDIApplication.getAppContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE)).createWifiLock(WifiManager.WIFI_MODE_FULL, "stagecaller:WIFILock");
+        wifiLock = ((WifiManager) DPMIDIApplication.getAppContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE)).createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "stagecaller:WIFILock");
         wakeLock = ((PowerManager) DPMIDIApplication.getAppContext().getSystemService(Context.POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "stagecaller:WakeLock");
 
         Process.setThreadPriority(Process.THREAD_PRIORITY_DEFAULT);
@@ -213,7 +214,7 @@ public class ConnectionManagerService extends Service implements DPMIDIForegroun
         } else {
             Bitmap icon = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
 
-            Notification notification = new android.support.v4.app.NotificationCompat.Builder(this, "")
+            Notification notification = new NotificationCompat.Builder(this, "")
                     .setContentTitle("StageCaller")
                     .setTicker("StageCaller")
                     .setContentText("stagecaller")
