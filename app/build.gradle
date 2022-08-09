@@ -5,9 +5,9 @@ android {
 
     signingConfigs {
         debug {
-            keyAlias 'stagecallerdebugkey'
+            keyAlias 'flammenmeer'
             keyPassword 'android'
-            storeFile file('/Users/jay/.android/debug.keystore')
+            storeFile file('../debug.keystore')
             storePassword 'android'
         }
         release {
@@ -20,7 +20,7 @@ android {
 
     defaultConfig {
         applicationId "com.disappointedpig.dpmidi"
-        minSdkVersion 16
+        minSdkVersion 21
         targetSdkVersion 32
         versionCode 5
         versionName "1.5"
@@ -63,6 +63,8 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.4.2'
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
     implementation 'com.google.android.material:material:1.6.1'
+    implementation 'io.github.petretiandrea:android-pdf-viewer:4.0.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     testImplementation 'junit:junit:4.13.2'
     //noinspection GradleCompatible
     implementation 'org.greenrobot:eventbus:3.3.1'

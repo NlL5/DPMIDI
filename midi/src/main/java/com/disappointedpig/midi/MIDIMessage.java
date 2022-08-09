@@ -92,4 +92,20 @@ public class MIDIMessage extends RTPMessage {
         buffer.write8(velocity);
         return buffer.toByteArray();
     }
+
+    public int getCommand() {
+        return channel_status;
+    }
+
+    public int getChannel() {
+        return channel;
+    }
+
+    public int getNote() {
+        return note;
+    }
+
+    public int getVelocity() {
+        return velocity;
+    }
 }

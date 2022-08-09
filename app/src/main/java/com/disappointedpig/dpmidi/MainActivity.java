@@ -33,14 +33,11 @@ import com.disappointedpig.midi.events.MIDISessionStartEvent;
 import com.disappointedpig.midi.events.MIDISessionStopEvent;
 import com.disappointedpig.midi.events.MIDISyncronizationCompleteEvent;
 import com.disappointedpig.midi.events.MIDISyncronizationStartEvent;
+import com.github.barteksc.pdfviewer.PDFView;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-
-//import android.support.design.widget.FloatingActionButton;
-//import android.support.design.widget.Snackbar;
-//import android.support.v7.widget.RecyclerView;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -75,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
     ToggleButton midiSessionToggle, cmServiceToggle, backgroundToggleButton, reconnectToggleButton;
     TextView midiStatusTextView;
 
-    Button midiInviteButton, midiEndConnectionButton, openABButton, testHeartbeat;
+    Button midiInviteButton, midiEndConnectionButton, openABButton, testHeartbeat, openPdfButton;
 
     TextView midiConnectionStatusTextView;
 
@@ -103,6 +100,8 @@ public class MainActivity extends AppCompatActivity {
         bindToCMGRS();
         // bind to CMS
 //        bindService(new Intent(this, ConnectionManagerService.class), svcConn, BIND_AUTO_CREATE);
+
+        PdfViewActivity.register(this);
 
         sharedpreferences = DPMIDIApplication.getAppContext().getSharedPreferences("SCPreferences", Context.MODE_PRIVATE);
 
@@ -221,6 +220,16 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(MainActivity.this, AddressBook.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 startActivityForResult(intent, 1);
+            }
+        });
+
+        openPdfButton = findViewById(R.id.openPdfButton);
+        openPdfButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Intent intent = new Intent(MainActivity.this, PdfViewActivity.class);
+                startActivity(intent);
             }
         });
 

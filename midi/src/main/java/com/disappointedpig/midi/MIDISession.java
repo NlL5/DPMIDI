@@ -1021,6 +1021,9 @@ public class MIDISession {
     }
 
     private String rinfoToKey(Bundle rinfo) {
+        if (rinfo == null) {
+            return "_rinfo was null_";
+        }
         return String.format(Locale.ENGLISH,"%1$s:%2$d",rinfo.getString(RINFO_ADDR),rinfo.getInt(RINFO_PORT,1234));
     }
 

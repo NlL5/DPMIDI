@@ -131,6 +131,13 @@
             android:layout_height="wrap_content"
             android:text="open address book"
             android:id="@+id/openABButton"/>
+
+        <Button
+            android:id="@+id/openPdfButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableLeft="@android:drawable/ic_media_play"
+            android:text="Open PDF View" />
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
