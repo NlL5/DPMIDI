@@ -7,6 +7,7 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.StrictMode;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -93,6 +94,8 @@ public class MainActivity extends AppCompatActivity {
         MIDISession.getInstance().init(DPMIDIApplication.getAppContext());
 
         //start cms
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy); // Quick fix: The ConnectionManagerService is run on the main thread, which is not allowed. A separated thread should be used!
         Intent startIntent = new Intent(MainActivity.this, ConnectionManagerService.class);
         startIntent.setAction(Constants.ACTION.STARTCMGR_ACTION);
         startService(startIntent);

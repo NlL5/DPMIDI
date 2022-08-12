@@ -360,7 +360,7 @@ public class ConnectionManagerService extends Service implements DPMIDIForegroun
         MIDISession midi = MIDISession.getInstance();
         if(midi != null) {
             midi.init(DPMIDIApplication.getAppContext());
-            midi.setBonjourName(DEFAULT_BONJOUR_NAME);
+            midi.setBonjourName(Build.MODEL + " / " + Build.DEVICE);
             midi.start();
             midiRunning = true;
             setMIDIState(ConnectionState.RUNNING);
