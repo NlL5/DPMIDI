@@ -1,11 +1,13 @@
 package com.disappointedpig.dpmidi;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -42,12 +44,13 @@ public class ConnectionManagerService extends Service implements DPMIDIForegroun
     private WifiManager.WifiLock wifiLock;
     private PowerManager.WakeLock wakeLock;
 
-    private final Binder binder     = new LocalBinder();
-    private Map<Activity, IListenerFunctions> clients    = new ConcurrentHashMap<Activity, IListenerFunctions>();
+    private final Binder binder = new LocalBinder();
+    private Map<Activity, IListenerFunctions> clients = new ConcurrentHashMap<Activity, IListenerFunctions>();
 
     private ConnectionState MIDIState;
     private boolean midiRunning = false;
-    private static final String DEFAULT_BONJOUR_NAME = "testing";
+    private static final String DEFAULT_BONJOUR_NAME = Build.MODEL + " / " + Build.DEVICE;
+    private BluetoothAdapter mBluetoothAdapter;
 
 
     public ConnectionManagerService() {
@@ -76,7 +79,15 @@ public class ConnectionManagerService extends Service implements DPMIDIForegroun
     private void processIntentAction(Intent intent) {
         Log.i(TAG, "processIntentAction ");
 
-        if(!cmsIsRunning) {
+        if (!cmsIsRunning) {
+            if (intent == null) {
+                Log.d(TAG, "Intent was null!");
+                return;
+            }
+            if (intent.getAction() == null) {
+                Log.d(TAG, "Action was null!");
+                return;
+            }
             if (intent.getAction().equals(Constants.ACTION.STARTCMGR_ACTION)) {
                 Log.i(TAG, "Received STARTCMGR_ACTION ");
                 createNotificationIntent();
@@ -112,7 +123,7 @@ public class ConnectionManagerService extends Service implements DPMIDIForegroun
 
             }
         } else {
-            if(intent.getAction().equals(Constants.ACTION.STOPCMGR_ACTION)) {
+            if (intent.getAction().equals(Constants.ACTION.STOPCMGR_ACTION)) {
                 Log.i(TAG, "Received STOPCMGR_ACTION ");
                 cmsIsRunning = false;
                 DPMIDIForeground.get().removeListener(this);
@@ -120,10 +131,10 @@ public class ConnectionManagerService extends Service implements DPMIDIForegroun
 //                EventBus.getDefault().unregister(this);
                 stopForeground(true);
                 stopSelf();
-            } else if(intent.getAction().equals(Constants.ACTION.START_MIDI_ACTION)) {
+            } else if (intent.getAction().equals(Constants.ACTION.START_MIDI_ACTION)) {
                 Log.i(TAG, "Received START_MIDI_ACTION ");
                 startMIDI();
-            } else if(intent.getAction().equals(Constants.ACTION.STOP_MIDI_ACTION)) {
+            } else if (intent.getAction().equals(Constants.ACTION.STOP_MIDI_ACTION)) {
                 Log.i(TAG, "Received STOP_MIDI_ACTION ");
                 stopMIDI();
             } else {
@@ -185,7 +196,7 @@ public class ConnectionManagerService extends Service implements DPMIDIForegroun
 
         Intent notificationIntent = new Intent(this, MainActivity.class);
         notificationIntent.setAction(Constants.ACTION.MAIN_ACTION);
-        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
@@ -256,7 +267,7 @@ public class ConnectionManagerService extends Service implements DPMIDIForegroun
 
 
 //        final NotificationCompat.Builder builder = new NotificationCompat.Builder(this,notificationChannel.getId());
-        Notification notification = new NotificationCompat.Builder(this,notificationChannel.getId()).build();
+        Notification notification = new NotificationCompat.Builder(this, notificationChannel.getId()).build();
 
         startForeground(Constants.NOTIFICATION_ID.CONNECTIONMGR, notification);
     }
@@ -264,62 +275,62 @@ public class ConnectionManagerService extends Service implements DPMIDIForegroun
     // check if midi should be on
     private void checkMIDI() {
         // check if midi should be on
-        Log.d(TAG,"check MIDI");
+        Log.d(TAG, "check MIDI");
         SharedPreferences sharedpreferences = DPMIDIApplication.getAppContext().getSharedPreferences("SCPreferences", Context.MODE_PRIVATE);
-        if(sharedpreferences != null) {
+        if (sharedpreferences != null) {
             Boolean midiPref = sharedpreferences.getBoolean(Constants.PREF.MIDI_STATE_PREF, false);
             if (midiPref && MIDIState == NOT_RUNNING) {
                 startMIDI();
-                Log.d(TAG,"--- start MIDI");
+                Log.d(TAG, "--- start MIDI");
 
-            } else if(!midiPref && MIDIState == ConnectionState.RUNNING) {
+            } else if (!midiPref && MIDIState == ConnectionState.RUNNING) {
                 stopMIDI();
-                Log.d(TAG,"--- stop MIDI");
+                Log.d(TAG, "--- stop MIDI");
             }
         }
     }
 
     private void checkLocks() {
-        Log.d(TAG,"start checkLocks wifi:"+(wifiLock.isHeld() ? "YES" : "NO") +" wake:"+(wakeLock.isHeld() ? "YES" : "NO"));
-        if(!runInBackground()) {
-            if(wifiLock.isHeld()) {
+        Log.d(TAG, "start checkLocks wifi:" + (wifiLock.isHeld() ? "YES" : "NO") + " wake:" + (wakeLock.isHeld() ? "YES" : "NO"));
+        if (!runInBackground()) {
+            if (wifiLock.isHeld()) {
                 wifiLock.release();
             }
-            if(wakeLock.isHeld()) {
+            if (wakeLock.isHeld()) {
                 wakeLock.release();
             }
         } else {
-            if(!wifiLock.isHeld()) {
+            if (!wifiLock.isHeld()) {
                 wifiLock.acquire();
             }
-            if(!wakeLock.isHeld()) {
+            if (!wakeLock.isHeld()) {
                 wakeLock.acquire();
             }
         }
 
-        Log.d(TAG,"end checkLocks wifi:"+(wifiLock.isHeld() ? "YES" : "NO") +" wake:"+(wakeLock.isHeld() ? "YES" : "NO"));
+        Log.d(TAG, "end checkLocks wifi:" + (wifiLock.isHeld() ? "YES" : "NO") + " wake:" + (wakeLock.isHeld() ? "YES" : "NO"));
     }
 
     public void onBecameForeground() {
-        Log.d(TAG,"became foreground");
+        Log.d(TAG, "became foreground");
         Process.setThreadPriority(Process.THREAD_PRIORITY_FOREGROUND);
-        Log.e(TAG,"set priority to THREAD_PRIORITY_FOREGROUND");
+        Log.e(TAG, "set priority to THREAD_PRIORITY_FOREGROUND");
         checkMIDI();
     }
 
     public void onBecameBackground() {
-        Log.d(TAG,"became background");
+        Log.d(TAG, "became background");
 
         checkLocks();
         // check if background is set
 
-        if(!runInBackground()) {
+        if (!runInBackground()) {
             // turn off midi and osc as appropriate
             switch (MIDIState) {
                 case RUNNING:
                 case STARTING:
-                    Log.e(TAG,"stopping midi");
-                    Log.e(TAG,"set priority to THREAD_PRIORITY_DEFAULT");
+                    Log.e(TAG, "stopping midi");
+                    Log.e(TAG, "set priority to THREAD_PRIORITY_DEFAULT");
 
                     Process.setThreadPriority(Process.THREAD_PRIORITY_DEFAULT);
 
@@ -330,17 +341,16 @@ public class ConnectionManagerService extends Service implements DPMIDIForegroun
                     break;
             }
         } else {
-            Log.e(TAG,"set priority to THREAD_PRIORITY_URGENT_AUDIO");
+            Log.e(TAG, "set priority to THREAD_PRIORITY_URGENT_AUDIO");
             Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO);
         }
     }
 
     private boolean runInBackground() {
         boolean bg = ((DPMIDIApplication) this.getApplicationContext()).getRunInBackground();
-        Log.e(TAG,"should background? "+(bg ? "YES" : "NO"));
+        Log.e(TAG, "should background? " + (bg ? "YES" : "NO"));
         return bg;
     }
-
 
 
     // -------------------------------------------------------------------------------
@@ -358,9 +368,9 @@ public class ConnectionManagerService extends Service implements DPMIDIForegroun
         setMIDIState(ConnectionState.STARTING);
 
         MIDISession midi = MIDISession.getInstance();
-        if(midi != null) {
+        if (midi != null) {
             midi.init(DPMIDIApplication.getAppContext());
-            midi.setBonjourName(Build.MODEL + " / " + Build.DEVICE);
+            midi.setBonjourName(getLocalBluetoothName());
             midi.start();
             midiRunning = true;
             setMIDIState(ConnectionState.RUNNING);
@@ -384,7 +394,7 @@ public class ConnectionManagerService extends Service implements DPMIDIForegroun
 //            hbm.stopHeartbeat();
 //        }
 
-        if(midi != null) {
+        if (midi != null) {
             midi.stop();
         } else {
             midiRunning = false;
@@ -412,7 +422,9 @@ public class ConnectionManagerService extends Service implements DPMIDIForegroun
             return MIDIState;
         }
 
-        public boolean cmsIsRunning() { return cmsIsRunning; }
+        public boolean cmsIsRunning() {
+            return cmsIsRunning;
+        }
 
     }
 
@@ -439,4 +451,20 @@ public class ConnectionManagerService extends Service implements DPMIDIForegroun
         }
     }
 
+    /**
+     * Inspired by https://stackoverflow.com/a/6662271
+     * @return The Bluetooth name of the device, or a combination of device model and name
+     */
+    protected String getLocalBluetoothName() {
+        if (mBluetoothAdapter == null) {
+            mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        }
+        @SuppressLint("MissingPermission")
+        String name = mBluetoothAdapter.getName();
+        if (name == null) {
+            System.out.println("Bluetooth name is null!");
+            return DEFAULT_BONJOUR_NAME;
+        }
+        return name;
+    }
 }
