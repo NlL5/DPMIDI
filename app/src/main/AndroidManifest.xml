@@ -38,6 +38,7 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".PdfViewActivity"
+            android:launchMode="singleTop"
             android:exported="true"
             android:theme="@style/AppTheme.NoActionBar" />
     </application>
