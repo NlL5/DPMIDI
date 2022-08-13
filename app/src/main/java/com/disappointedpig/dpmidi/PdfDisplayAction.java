@@ -1,17 +1,6 @@
 package com.disappointedpig.dpmidi;
 
-import android.app.DownloadManager;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.pdf.PdfRenderer;
-import android.graphics.pdf.PdfRenderer.Page;
-import android.net.Uri;
-import android.os.Build;
-import android.os.Environment;
-import android.os.ParcelFileDescriptor;
-import android.webkit.URLUtil;
-import android.widget.ImageView;
 
 import com.github.barteksc.pdfviewer.PDFView;
 
@@ -22,8 +11,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Arrays;
@@ -32,6 +19,7 @@ public class PdfDisplayAction {
 
     private final PDFView.Configurator configurator;
     private final File file;
+    private final PDFView pdfView;
     private int currentPage = 0;
 
     public PdfDisplayAction(PDFView pdfView) {
@@ -39,6 +27,7 @@ public class PdfDisplayAction {
     }
 
     public PdfDisplayAction(PDFView pdfView, int startWithPage) {
+        this.pdfView = pdfView;
         this.currentPage = startWithPage;
         Context context = DPMIDIApplication.getAppContext();
 
@@ -68,15 +57,15 @@ public class PdfDisplayAction {
         thread.start();
     }
 
-    public PDFView.Configurator getConfigurator() {
+    public PDFView getPdfView() {
 
         if (!file.exists()) {
             tryDownload();
         }
-        return configurator;
+        return pdfView;
     }
 
-    public static File loadFile(String path, Context context) throws IOException {
+    public static File loadAssetIntoCache(String path, Context context) throws IOException {
         File file = new File(context.getCacheDir(), path);
         if (!file.exists()) {
             // Since PdfRenderer cannot handle the compressed asset file directly, we copy it into
@@ -122,7 +111,7 @@ public class PdfDisplayAction {
 
     public void gotoPage(int page) {
         if (page != currentPage) {
-            getConfigurator().defaultPage(page).load();
+            getPdfView().jumpTo(page, false);
         }
         currentPage = page;
     }
