@@ -1,13 +1,10 @@
 package com.disappointedpig.dpmidi;
 
-import static android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK;
-
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
+import android.view.WindowManager;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 
 import com.disappointedpig.midi.MIDIMessage;
 import com.disappointedpig.midi.events.MIDIConnectionEstablishedEvent;
@@ -27,6 +24,7 @@ public class PdfViewActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pdf_viewer);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         PDFView pdfView = this.findViewById(R.id.pdfView);
         action = new PdfDisplayAction(pdfView, lastPage);
@@ -52,7 +50,6 @@ public class PdfViewActivity extends AppCompatActivity {
             @Subscribe(threadMode = ThreadMode.MAIN)
             public void onMidiNoteEvent(MIDIReceivedEvent event) {
                 System.out.println("PdfViewActivity: got MIDI event. " + event.midi.toString());
-                //mainActivity.startActivity(intent);
 
                 MIDIMessage message = MIDIMessage.newUsing(event.midi);
                 if (message.getChannel() == 1 && message.getCommand() == 0x09) { // MIDI ON
