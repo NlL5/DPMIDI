@@ -36,7 +36,11 @@ public class PdfDisplayAction {
                 .swipeHorizontal(true)
                 .pageSnap(true)
                 .autoSpacing(true)
-                .pageFling(true);
+                .pageFling(true)
+                .defaultPage(currentPage);
+        if (file.exists()) {
+            configurator.load(); // load and display on activity start
+        }
 
         tryDownload();
     }
