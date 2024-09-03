@@ -52,7 +52,7 @@ public class PdfViewActivity extends AppCompatActivity {
                 System.out.println("PdfViewActivity: got MIDI event. " + event.midi.toString());
 
                 MIDIMessage message = MIDIMessage.newUsing(event.midi);
-                if (message.getChannel() == 1 && message.getCommand() == 0x09) { // MIDI ON
+                if (message.getChannel() == 0 && (message.getCommand() == 0x9 || message.getCommand() == 0xB)) { // MIDI ON or CC, helper tool: http://www.xmlizer.net/hansLindauer/midiapp.html
 
                     lastPage = message.getNote()*100 + message.getVelocity();
 

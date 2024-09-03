@@ -301,19 +301,37 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void sendTestMIDI() {
-        Log.d("Main","sendTestMidi 41,127");
+        // Test Note on
+        Log.d("Main","sendTestMidi noteOn 0,127");
         Bundle testMessage = new Bundle();
         testMessage.putInt(MIDIConstants.MSG_COMMAND,0x09);
         testMessage.putInt(MIDIConstants.MSG_CHANNEL,0);
-        testMessage.putInt(MIDIConstants.MSG_NOTE,41);
+        testMessage.putInt(MIDIConstants.MSG_NOTE,0);
         testMessage.putInt(MIDIConstants.MSG_VELOCITY,127);
-//        MIDIMessage m = MIDIMessage.newUsing(testMessage);
         MIDISession.getInstance().sendMessage(testMessage);
-//        MIDISession.getInstance().sendMessage(41,127);
-//        MIDIMessage message = MIDISession.getInstance().sendNote(41,127);
-//        if(message != null) {
-//            MIDISession.getInstance().sendNote(41,127);
-//        }
+
+        testMessage = new Bundle();
+        Log.d("Main","sendTestMidi noteOn 1,127");
+        testMessage.putInt(MIDIConstants.MSG_COMMAND,0x09);
+        testMessage.putInt(MIDIConstants.MSG_CHANNEL,0);
+        testMessage.putInt(MIDIConstants.MSG_NOTE,1);
+        testMessage.putInt(MIDIConstants.MSG_VELOCITY,127);
+        MIDISession.getInstance().sendMessage(testMessage);
+
+        // Test CC
+        Log.d("Main","sendTestMidi CC 0,127");
+        testMessage.putInt(MIDIConstants.MSG_COMMAND,0xb0);
+        testMessage.putInt(MIDIConstants.MSG_CHANNEL,0);
+        testMessage.putInt(MIDIConstants.MSG_NOTE,0);
+        testMessage.putInt(MIDIConstants.MSG_VELOCITY,127);
+        MIDISession.getInstance().sendMessage(testMessage);
+
+        Log.d("Main","sendTestMidi CC 1,127");
+        testMessage.putInt(MIDIConstants.MSG_COMMAND,0xb0);
+        testMessage.putInt(MIDIConstants.MSG_CHANNEL,0);
+        testMessage.putInt(MIDIConstants.MSG_NOTE,1);
+        testMessage.putInt(MIDIConstants.MSG_VELOCITY,127);
+        MIDISession.getInstance().sendMessage(testMessage);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
