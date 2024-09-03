@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 32
+    compileSdk 34
 
     signingConfigs {
         debug {
@@ -21,7 +21,7 @@ android {
     defaultConfig {
         applicationId "com.disappointedpig.dpmidi"
         minSdkVersion 21
-        targetSdkVersion 32
+        targetSdk 34
         versionCode 5
         versionName "1.5"
     }
@@ -33,7 +33,6 @@ android {
             proguardFiles 'proguard-rules.pro', getDefaultProguardFile('proguard-android.txt')
             signingConfig signingConfigs.debug
             renderscriptDebuggable false
-            zipAlignEnabled false
             debuggable true
         }
         release {
@@ -42,7 +41,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
             renderscriptDebuggable false
-            zipAlignEnabled true
             debuggable false
         }
     }
@@ -55,19 +53,20 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    namespace 'com.disappointedpig.dpmidi'
 }
 
 dependencies {
     implementation 'com.android.support.constraint:constraint-layout:2.0.4'
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'androidx.appcompat:appcompat:1.4.2'
-    implementation 'androidx.recyclerview:recyclerview:1.2.1'
-    implementation 'com.google.android.material:material:1.6.1'
-    implementation 'com.github.barteksc:android-pdf-viewer:3.2.0-beta.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.recyclerview:recyclerview:1.3.2'
+    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'com.github.TEA-ebook:AndroidPdfViewer:3.2.2'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'com.github.chthai64:SwipeRevealLayout:1.4.0'
     testImplementation 'junit:junit:4.13.2'
     //noinspection GradleCompatible
     implementation 'org.greenrobot:eventbus:3.3.1'
-    implementation 'com.chauthai.swipereveallayout:swipe-reveal-layout:1.4.1'
     implementation project(':midi')
 }

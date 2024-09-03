@@ -17,8 +17,8 @@ public interface OnFragmentInteractionListener {
 
     void onFragmentChange(SwipeRefreshLayout swipeRefreshLayout, RecyclerView recyclerView,
                           int mode);
-    //    void onRecyclerItemClick(View v, int position);
-//    void initSearchView(final Menu menu);
+    //void onRecyclerItemClick(View v, int position);
+    //void initSearchView(final Menu menu);
     void onRecyclerItemClick(ViewModel viewModel);
 
 }
