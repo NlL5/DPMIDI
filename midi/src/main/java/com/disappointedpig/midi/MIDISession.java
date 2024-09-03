@@ -1108,7 +1108,11 @@ public class MIDISession {
         try {
             byte[] a1 = InetAddress.getByName(ip).getAddress();
             byte[] a2 = bonjourHost.getAddress();
-            byte[] m = netmask.getAddress();
+            byte[] m = {-1, -1, -1, 0}; // default for case of no-wifi
+            if (netmask != null) {
+                m = netmask.getAddress();
+            }
+
             for (int i = 0; i < a1.length; i++)
                 if ((a1[i] & m[i]) != (a2[i] & m[i]))
                     return false;

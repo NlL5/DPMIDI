@@ -459,6 +459,10 @@ public class ConnectionManagerService extends Service implements DPMIDIForegroun
         if (mBluetoothAdapter == null) {
             mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         }
+        if (mBluetoothAdapter == null) {
+            return "DPMIDI";
+        }
+
         @SuppressLint("MissingPermission")
         String name = mBluetoothAdapter.getName();
         if (name == null) {
