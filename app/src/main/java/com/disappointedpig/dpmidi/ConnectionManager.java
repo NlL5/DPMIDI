@@ -63,7 +63,8 @@ public class ConnectionManager {
     public ConnectionManager() {
         MIDIState = ConnectionState.NOT_RUNNING;
         OSCState = ConnectionState.NOT_RUNNING;
-        wifiLock = ((WifiManager) DPMIDIApplication.getAppContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE)).createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "dpmidiWIFILock");
+        int wifiMode = (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) ? WifiManager.WIFI_MODE_FULL_LOW_LATENCY : WifiManager.WIFI_MODE_FULL_HIGH_PERF;
+        wifiLock = ((WifiManager) DPMIDIApplication.getAppContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE)).createWifiLock(wifiMode, "dpmidiWIFILock");
         EventBus.getDefault().register(this);
     }
 

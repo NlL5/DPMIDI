@@ -1,0 +1,607 @@
+# compiler: R8
+# compiler_version: 8.5.35
+# common_typos_disable
+# {"id":"com.android.tools.r8.mapping","version":"2.2"}
+# pg_map_id: 70af6b8
+# pg_map_hash: SHA-256 70af6b870a35d9e2e2207076102817362578b781dd9d041773f1b694a75bd6cb
+com.disappointedpig.midi.MIDIAddressBookEntry -> com.disappointedpig.midi.MIDIAddressBookEntry:
+# {"id":"sourceFile","fileName":"MIDIAddressBookEntry.java"}
+    java.lang.String address -> a
+    int port -> b
+    java.lang.String name -> c
+    java.lang.Boolean reconnect -> d
+    1:1:void <init>():17:17 -> <init>
+    2:6:void <init>(android.os.Bundle):20:24 -> <init>
+    1:1:java.lang.String getAddress():41:41 -> getAddress
+    1:1:java.lang.String getAddressPort():52:52 -> getAddressPort
+    1:1:java.lang.String getName():59:59 -> getName
+    1:1:int getPort():49:49 -> getPort
+    1:1:boolean getReconnect():67:67 -> getReconnect
+    1:5:android.os.Bundle rinfo():28:32 -> rinfo
+    1:1:void setAddress(java.lang.String):37:37 -> setAddress
+    1:1:void setName(java.lang.String):55:55 -> setName
+    1:1:void setPort(int):45:45 -> setPort
+    1:1:void setReconnect(boolean):63:63 -> setReconnect
+com.disappointedpig.midi.MIDIConstants -> com.disappointedpig.midi.MIDIConstants:
+# {"id":"sourceFile","fileName":"MIDIConstants.java"}
+    1:1:void <init>():3:3 -> <init>
+com.disappointedpig.midi.MIDIControl -> com.disappointedpig.midi.MIDIControl:
+# {"id":"sourceFile","fileName":"MIDIControl.java"}
+    java.lang.Boolean valid -> a
+    com.disappointedpig.midi.utility.DataBuffer m -> b
+    java.util.Map commandMap -> c
+    1:9:void <clinit>():173:181 -> <clinit>
+    1:1:void <init>():37:37 -> <init>
+    1:2:java.lang.Integer getCommandKey(com.disappointedpig.midi.MIDIControl$AppleMIDICommand):185:186 -> a
+    1:5:void createEnd(int,int,java.lang.String):121:125 -> createEnd
+    1:5:void createInvitation(int,int,java.lang.String):98:102 -> createInvitation
+    1:5:void createInvitationAccepted(int,int,java.lang.String):106:110 -> createInvitationAccepted
+    1:5:void createInvitationRejected(int,int,java.lang.String):114:118 -> createInvitationRejected
+    1:6:void createSyncronization(int,int,long,long,long):128:133 -> createSyncronization
+    1:43:void dumppacket():205:247 -> dumppacket
+    44:60:void dumppacket():227:243 -> dumppacket
+    61:63:void dumppacket():233:235 -> dumppacket
+    64:67:void dumppacket():221:224 -> dumppacket
+    68:71:void dumppacket():215:218 -> dumppacket
+    72:113:void dumppacket():209:250 -> dumppacket
+    1:29:byte[] generateBuffer():137:165 -> generateBuffer
+    30:37:byte[] generateBuffer():152:159 -> generateBuffer
+    38:64:byte[] generateBuffer():144:170 -> generateBuffer
+    1:1:java.lang.Boolean isValid():94:94 -> isValid
+    1:46:boolean parse(com.disappointedpig.midi.internal_events.PacketEvent):40:85 -> parse
+    47:49:boolean parse(com.disappointedpig.midi.internal_events.PacketEvent):78:80 -> parse
+    50:56:boolean parse(com.disappointedpig.midi.internal_events.PacketEvent):63:69 -> parse
+    57:96:boolean parse(com.disappointedpig.midi.internal_events.PacketEvent):51:90 -> parse
+com.disappointedpig.midi.MIDIControl$1 -> com.disappointedpig.midi.MIDIControl$a:
+# {"id":"sourceFile","fileName":"MIDIControl.java"}
+    int[] $SwitchMap$com$disappointedpig$midi$MIDIControl$AppleMIDICommand -> a
+    1:1:void <clinit>():46:46 -> <clinit>
+com.disappointedpig.midi.MIDIControl$AppleMIDICommand -> com.disappointedpig.midi.MIDIControl$AppleMIDICommand:
+# {"id":"sourceFile","fileName":"MIDIControl.java"}
+    com.disappointedpig.midi.MIDIControl$AppleMIDICommand[] $VALUES -> a
+    1:8:void <clinit>():194:201 -> <clinit>
+    9:9:void <clinit>():193:193 -> <clinit>
+    1:1:void <init>(java.lang.String,int):193:193 -> <init>
+    1:1:com.disappointedpig.midi.MIDIControl$AppleMIDICommand[] $values():193:193 -> a
+    1:1:com.disappointedpig.midi.MIDIControl$AppleMIDICommand valueOf(java.lang.String):193:193 -> valueOf
+    1:1:com.disappointedpig.midi.MIDIControl$AppleMIDICommand[] values():193:193 -> values
+com.disappointedpig.midi.MIDIEventBusIndex -> com.disappointedpig.midi.MIDIEventBusIndex:
+# {"id":"sourceFile","fileName":"MIDIEventBusIndex.java"}
+    java.util.Map SUBSCRIBER_INDEX -> a
+    1:3:void <clinit>():18:20 -> <clinit>
+    1:1:void <init>():14:14 -> <init>
+    1:1:void putIndex(org.greenrobot.eventbus.meta.SubscriberInfo):44:44 -> a
+    1:1:org.greenrobot.eventbus.meta.SubscriberInfo getSubscriberInfo(java.lang.Class):49:49 -> getSubscriberInfo
+com.disappointedpig.midi.MIDIFailCode -> com.disappointedpig.midi.MIDIFailCode:
+# {"id":"sourceFile","fileName":"MIDIFailCode.java"}
+    com.disappointedpig.midi.MIDIFailCode[] $VALUES -> a
+    1:6:void <clinit>():4:9 -> <clinit>
+    7:7:void <clinit>():3:3 -> <clinit>
+    1:1:void <init>(java.lang.String,int):3:3 -> <init>
+    1:1:com.disappointedpig.midi.MIDIFailCode[] $values():3:3 -> a
+    1:1:com.disappointedpig.midi.MIDIFailCode valueOf(java.lang.String):3:3 -> valueOf
+    1:1:com.disappointedpig.midi.MIDIFailCode[] values():3:3 -> values
+com.disappointedpig.midi.MIDIMessage -> com.disappointedpig.midi.MIDIMessage:
+# {"id":"sourceFile","fileName":"MIDIMessage.java"}
+    java.lang.Boolean valid -> l
+    boolean firstHasDeltaTime -> n
+    int channel_status -> o
+    int channel -> p
+    int note -> q
+    int velocity -> r
+    1:1:void <init>():38:38 -> <init>
+    1:4:void createNote(int,int,int,int):72:75 -> createNote
+    5:6:void createNote(int,int):78:79 -> createNote
+    1:7:byte[] generateBuffer():87:93 -> generateBuffer
+    1:1:int getChannel():101:101 -> getChannel
+    1:1:int getCommand():97:97 -> getCommand
+    1:1:int getNote():105:105 -> getNote
+    1:1:int getVelocity():109:109 -> getVelocity
+    1:1:java.lang.Boolean isValid():83:83 -> isValid
+    1:2:com.disappointedpig.midi.MIDIMessage newUsing(int,int,int,int):25:26 -> newUsing
+    3:6:com.disappointedpig.midi.MIDIMessage newUsing(android.os.Bundle):31:34 -> newUsing
+    7:7:com.disappointedpig.midi.MIDIMessage newUsing(android.os.Bundle):31:31 -> newUsing
+    1:17:boolean parseMessage(com.disappointedpig.midi.internal_events.PacketEvent):42:58 -> parseMessage
+    1:5:android.os.Bundle toBundle():63:67 -> toBundle
+com.disappointedpig.midi.MIDIPort -> com.disappointedpig.midi.a:
+# {"id":"sourceFile","fileName":"MIDIPort.java"}
+    int port -> a
+    java.nio.channels.Selector selector -> b
+    java.nio.channels.DatagramChannel channel -> c
+    java.util.Queue outboundQueue -> d
+    boolean isListening -> e
+    java.lang.Thread thread -> f
+    int BUFFER_SIZE -> g
+    java.lang.String TAG -> h
+    1:1:void <init>(int):46:46 -> <init>
+    2:31:void <init>(int):34:63 -> <init>
+    1:1:com.disappointedpig.midi.MIDIPort newUsing(int):43:43 -> a
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(I)Lcom/disappointedpig/midi/a;"}
+    2:2:int getPort():119:119 -> a
+    3:10:void handleRead(java.nio.channels.SelectionKey):152:159 -> a
+    11:15:void sendMidi(com.disappointedpig.midi.MIDIControl,android.os.Bundle):180:184 -> a
+    16:20:void sendMidi(com.disappointedpig.midi.MIDIMessage,android.os.Bundle):189:193 -> a
+    21:24:void addToOutboundQueue(byte[],android.os.Bundle):198:201 -> a
+    1:1:int getThreadPriority():127:127 -> b
+    2:2:void setThreadPriority(int):131:131 -> b
+    3:11:void handleWrite(java.nio.channels.SelectionKey):164:172 -> b
+    1:1:boolean isListening():123:123 -> c
+    1:7:void start():135:141 -> d
+    1:1:void stop():147:147 -> e
+    1:14:void finalize():69:82 -> finalize
+    1:25:void run():88:112 -> run
+com.disappointedpig.midi.MIDIPort$1 -> com.disappointedpig.midi.a$a:
+# {"id":"sourceFile","fileName":"MIDIPort.java"}
+com.disappointedpig.midi.MIDIPort$UDPBuffer -> com.disappointedpig.midi.a$b:
+# {"id":"sourceFile","fileName":"MIDIPort.java"}
+    java.net.DatagramPacket datagramPacket -> a
+    java.net.SocketAddress socketAddress -> b
+    java.nio.ByteBuffer buffer -> c
+    com.disappointedpig.midi.MIDIPort this$0 -> d
+      # {"id":"com.android.tools.r8.residualsignature","signature":"Lcom/disappointedpig/midi/a;"}
+    1:4:void <init>(com.disappointedpig.midi.MIDIPort):205:208 -> <init>
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Lcom/disappointedpig/midi/a;)V"}
+    5:5:void <init>(com.disappointedpig.midi.MIDIPort,com.disappointedpig.midi.MIDIPort$1):205:205 -> <init>
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Lcom/disappointedpig/midi/a;Lcom/disappointedpig/midi/a$a;)V"}
+com.disappointedpig.midi.MIDISession -> com.disappointedpig.midi.MIDISession:
+# {"id":"sourceFile","fileName":"MIDISession.java"}
+    android.net.nsd.NsdManager$ResolveListener mResolveListener -> A
+    android.net.nsd.NsdManager$DiscoveryListener mDiscoveryListener -> B
+    android.net.nsd.NsdManager$RegistrationListener mRegistrationListener -> C
+    android.net.nsd.NsdServiceInfo serviceInfo -> D
+    boolean autoReconnect -> E
+    android.content.BroadcastReceiver wifiReceiver -> F
+    boolean networkListenerRegistered -> G
+    com.disappointedpig.midi.MIDISession midiSessionInstance -> a
+    java.lang.String TAG -> b
+    java.lang.String BONJOUR_TYPE -> c
+    java.lang.String BONJOUR_SEPARATOR -> d
+    boolean DEBUG -> e
+    net.rehacktive.waspdb.WaspDb db -> f
+    net.rehacktive.waspdb.WaspHash midiAddressBook -> g
+    net.rehacktive.waspdb.WaspObserver observer -> h
+    java.lang.Boolean shouldBeRunning -> i
+    java.lang.Boolean isRunning -> j
+    android.content.Context appContext -> k
+    android.util.SparseArray streams -> l
+    android.util.SparseArray pendingStreams -> m
+    androidx.collection.ArrayMap failedConnections -> n
+    int readyState -> o
+    java.lang.Boolean registered_eb -> p
+    java.lang.Boolean published_bonjour -> q
+    java.lang.Boolean initialized -> r
+    java.lang.Boolean started -> s
+    int lastMessageTime -> t
+    int rate -> u
+    long startTime -> v
+    long startTimeHR -> w
+    com.disappointedpig.midi.MIDIPort controlChannel -> x
+      # {"id":"com.android.tools.r8.residualsignature","signature":"Lcom/disappointedpig/midi/a;"}
+    com.disappointedpig.midi.MIDIPort messageChannel -> y
+      # {"id":"com.android.tools.r8.residualsignature","signature":"Lcom/disappointedpig/midi/a;"}
+    android.net.nsd.NsdManager mNsdManager -> z
+    1:55:void <init>():85:139 -> <init>
+    1070:1070:void <init>():1154:1154 -> <init>
+    1071:1079:void <init>():86:94 -> <init>
+    1:1:java.lang.String access$000():72:72 -> a
+    2:2:android.net.nsd.NsdServiceInfo access$100(com.disappointedpig.midi.MIDISession):72:72 -> a
+    3:3:java.lang.Boolean access$202(com.disappointedpig.midi.MIDISession,java.lang.Boolean):72:72 -> a
+    4:4:net.rehacktive.waspdb.WaspDb access$302(com.disappointedpig.midi.MIDISession,net.rehacktive.waspdb.WaspDb):72:72 -> a
+    5:5:net.rehacktive.waspdb.WaspHash access$402(com.disappointedpig.midi.MIDISession,net.rehacktive.waspdb.WaspHash):72:72 -> a
+    6:8:com.disappointedpig.midi.MIDIStream getStream(android.os.Bundle):298:300 -> a
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Landroid/os/Bundle;)Lcom/disappointedpig/midi/b;"}
+    9:14:void reverseByteArray(byte[]):809:814 -> a
+    1:30:boolean addToAddressBook(android.os.Bundle):989:1018 -> addToAddressBook
+    31:32:boolean addToAddressBook(com.disappointedpig.midi.MIDIAddressBookEntry):1031:1032 -> addToAddressBook
+    1:1:boolean addressBookIsEmpty():1043:1043 -> addressBookIsEmpty
+    1:1:net.rehacktive.waspdb.WaspDb access$300(com.disappointedpig.midi.MIDISession):72:72 -> b
+    2:2:java.lang.Boolean access$502(com.disappointedpig.midi.MIDISession,java.lang.Boolean):72:72 -> b
+    3:30:java.lang.Boolean isAlreadyConnected(android.os.Bundle):316:343 -> b
+    31:39:void dumpAddressBook():1070:1078 -> b
+    1:1:boolean isHostConnectionAllowed(android.os.Bundle):0:0 -> c
+    2:2:net.rehacktive.waspdb.WaspHash access$400(com.disappointedpig.midi.MIDISession):72:72 -> c
+    3:3:void initializeNSDRegistrationListener():856:856 -> c
+    1:19:void checkAddressBookForReconnect():1084:1102 -> checkAddressBookForReconnect
+    1:23:void connect(android.os.Bundle):250:272 -> connect
+    1:1:java.lang.Boolean access$500(com.disappointedpig.midi.MIDISession):72:72 -> d
+    2:3:void initializeResolveListener():903:904 -> d
+    4:6:java.lang.String rinfoToKey(android.os.Bundle):1025:1027 -> d
+    1:1:boolean deleteFromAddressBook(com.disappointedpig.midi.MIDIAddressBookEntry):1038:1038 -> deleteFromAddressBook
+    1:7:void disconnect(android.os.Bundle):277:283 -> disconnect
+    8:10:void disconnect(int):290:292 -> disconnect
+    1:1:java.lang.Boolean access$600(com.disappointedpig.midi.MIDISession):72:72 -> e
+    2:21:void registerService():830:849 -> e
+    1:4:void shutdownNSDListener():922:925 -> f
+    1:9:void finalize():237:245 -> finalize
+    1:6:java.util.ArrayList getAllAddressBook():1047:1052 -> getAllAddressBook
+    1:1:boolean getAutoReconnect():312:312 -> getAutoReconnect
+    1:2:android.os.Bundle getEntryFromAddressBook(java.lang.String):984:985 -> getEntryFromAddressBook
+    1:4:com.disappointedpig.midi.MIDISession getInstance():98:101 -> getInstance
+    1:10:int getNetmask(java.net.InetAddress):782:791 -> getNetmask
+    1:2:long getNow():422:423 -> getNow
+    1:76:java.net.InetAddress getWifiAddress():659:734 -> getWifiAddress
+    77:77:java.net.InetAddress getWifiAddress():731:731 -> getWifiAddress
+    1:12:void init(android.content.Context):142:153 -> init
+    1:2:java.lang.String intToIp(int):797:798 -> intToIp
+    1:5:boolean isOnline():1213:1217 -> isOnline
+    6:6:boolean isOnline():1217:1217 -> isOnline
+    7:10:boolean isOnline():1216:1219 -> isOnline
+    1:3:void onAddressBookReadyEvent(com.disappointedpig.midi.internal_events.AddressBookReadyEvent):429:431 -> onAddressBookReadyEvent
+    1:5:void onConnectionEstablishedEvent(com.disappointedpig.midi.internal_events.ConnectionEstablishedEvent):471:475 -> onConnectionEstablishedEvent
+    1:13:void onConnectionFailedEvent(com.disappointedpig.midi.internal_events.ConnectionFailedEvent):582:594 -> onConnectionFailedEvent
+    14:14:void onConnectionFailedEvent(com.disappointedpig.midi.internal_events.ConnectionFailedEvent):591:591 -> onConnectionFailedEvent
+    15:15:void onConnectionFailedEvent(com.disappointedpig.midi.internal_events.ConnectionFailedEvent):588:588 -> onConnectionFailedEvent
+    16:46:void onConnectionFailedEvent(com.disappointedpig.midi.internal_events.ConnectionFailedEvent):585:615 -> onConnectionFailedEvent
+    1:52:void onPacketEvent(com.disappointedpig.midi.internal_events.PacketEvent):481:532 -> onPacketEvent
+    1:9:boolean onSameNetwork(java.lang.String):1109:1117 -> onSameNetwork
+    1:11:void onStreamConnected(com.disappointedpig.midi.internal_events.StreamConnectedEvent):437:447 -> onStreamConnected
+    1:38:void onStreamDisconnectEvent(com.disappointedpig.midi.internal_events.StreamDisconnectEvent):539:576 -> onStreamDisconnectEvent
+    1:1:void onSyncronizeStartedEvent(com.disappointedpig.midi.internal_events.SyncronizeStartedEvent):460:460 -> onSyncronizeStartedEvent
+    1:1:void onSyncronizeStoppedEvent(com.disappointedpig.midi.internal_events.SyncronizeStoppedEvent):466:466 -> onSyncronizeStoppedEvent
+    1:8:int prefixLengthToNetmaskInt(int):770:777 -> prefixLengthToNetmaskInt
+    1:7:void removeNetworkListener():1201:1207 -> removeNetworkListener
+    1:4:boolean sameIP(java.net.InetAddress,java.net.InetAddress):1144:1147 -> sameIP
+    1:9:void sendMessage(android.os.Bundle):388:396 -> sendMessage
+    10:18:void sendMessage(android.os.Bundle):392:400 -> sendMessage
+    19:27:void sendMessage(int,int):406:414 -> sendMessage
+    1:13:void sendUDPMessage(com.disappointedpig.midi.MIDIControl,android.os.Bundle):358:370 -> sendUDPMessage
+    14:21:void sendUDPMessage(com.disappointedpig.midi.MIDIMessage,android.os.Bundle):375:382 -> sendUDPMessage
+    1:1:void setAutoReconnect(boolean):308:308 -> setAutoReconnect
+    1:1:void setBonjourName(java.lang.String):826:826 -> setBonjourName
+    1:37:void setupNetworkListener():1161:1197 -> setupNetworkListener
+    1:5:void setupWaspDB():948:952 -> setupWaspDB
+    1:2:void start(android.content.Context):158:159 -> start
+    3:46:void start():163:206 -> start
+    1:20:void stop():212:231 -> stop
+    1:1:java.lang.String version():936:936 -> version
+com.disappointedpig.midi.MIDISession$1 -> com.disappointedpig.midi.MIDISession$a:
+# {"id":"sourceFile","fileName":"MIDISession.java"}
+    com.disappointedpig.midi.MIDISession this$0 -> a
+    1:1:void <init>(com.disappointedpig.midi.MIDISession):856:856 -> <init>
+    1:2:void onRegistrationFailed(android.net.nsd.NsdServiceInfo,int):880:881 -> onRegistrationFailed
+    1:12:void onServiceRegistered(android.net.nsd.NsdServiceInfo):863:874 -> onServiceRegistered
+    1:2:void onServiceUnregistered(android.net.nsd.NsdServiceInfo):888:889 -> onServiceUnregistered
+    1:2:void onUnregistrationFailed(android.net.nsd.NsdServiceInfo,int):895:896 -> onUnregistrationFailed
+com.disappointedpig.midi.MIDISession$2 -> com.disappointedpig.midi.MIDISession$b:
+# {"id":"sourceFile","fileName":"MIDISession.java"}
+    com.disappointedpig.midi.MIDISession this$0 -> a
+    1:1:void <init>(com.disappointedpig.midi.MIDISession):904:904 -> <init>
+    1:1:void onResolveFailed(android.net.nsd.NsdServiceInfo,int):909:909 -> onResolveFailed
+    1:1:void onServiceResolved(android.net.nsd.NsdServiceInfo):914:914 -> onServiceResolved
+com.disappointedpig.midi.MIDISession$3 -> com.disappointedpig.midi.MIDISession$c:
+# {"id":"sourceFile","fileName":"MIDISession.java"}
+    com.disappointedpig.midi.MIDISession this$0 -> a
+    1:1:void <init>(com.disappointedpig.midi.MIDISession):952:952 -> <init>
+    1:1:void onDone(java.lang.Object):952:952 -> onDone
+    2:15:void onDone(net.rehacktive.waspdb.WaspDb):955:968 -> onDone
+com.disappointedpig.midi.MIDISession$4 -> com.disappointedpig.midi.MIDISession$d:
+# {"id":"sourceFile","fileName":"MIDISession.java"}
+    com.disappointedpig.midi.MIDISession this$0 -> a
+    1:1:void <init>(com.disappointedpig.midi.MIDISession):1166:1166 -> <init>
+    1:12:void onReceive(android.content.Context,android.content.Intent):1173:1184 -> onReceive
+com.disappointedpig.midi.MIDISession$5 -> com.disappointedpig.midi.MIDISession$e:
+# {"id":"sourceFile","fileName":"MIDISession.java"}
+    int[] $SwitchMap$com$disappointedpig$midi$MIDIFailCode -> a
+    1:1:void <clinit>():583:583 -> <clinit>
+com.disappointedpig.midi.MIDIState -> com.disappointedpig.midi.MIDIState:
+# {"id":"sourceFile","fileName":"MIDIState.java"}
+    com.disappointedpig.midi.MIDIState[] $VALUES -> a
+    1:8:void <clinit>():4:11 -> <clinit>
+    9:9:void <clinit>():3:3 -> <clinit>
+    1:1:void <init>(java.lang.String,int):3:3 -> <init>
+    1:1:com.disappointedpig.midi.MIDIState[] $values():3:3 -> a
+    1:1:com.disappointedpig.midi.MIDIState valueOf(java.lang.String):3:3 -> valueOf
+    1:1:com.disappointedpig.midi.MIDIState[] values():3:3 -> values
+com.disappointedpig.midi.MIDIStream -> com.disappointedpig.midi.b:
+# {"id":"sourceFile","fileName":"MIDIStream.java"}
+    java.util.concurrent.ScheduledExecutorService connectService -> A
+    java.util.concurrent.ScheduledExecutorService syncService -> B
+    java.util.concurrent.ScheduledExecutorService checkConnectionService -> C
+    java.util.concurrent.ScheduledFuture connectFuture -> D
+    java.util.concurrent.ScheduledFuture syncFuture -> E
+    java.util.concurrent.ScheduledFuture checkConnectionFuture -> F
+    int connectTaskCount -> G
+    int syncTaskCount -> H
+    int syncFailCount -> I
+    int reconnectFailCount -> J
+    boolean receivedSyncResponse -> K
+    int connectionTimeoutMax -> L
+    int connectCountMax -> M
+    int primarySyncCountMax -> N
+    int syncFailCountMax -> O
+    int syncServicePrimaryFrequency -> P
+    int syncServiceFrequency -> Q
+    int STREAM_CONNECTED_TIMEOUT_DEFAULT -> a
+    int SYNC_PRIMARY_FREQUENCY_DEFAULT -> b
+    int SYNC_FREQUENCY_DEFAULT -> c
+    int CONNECT_COUNT_DEFAULT -> d
+    int PRIMARY_SYNC_COUNT_DEFAULT -> e
+    int SYNC_FAIL_COUNT_DEFAULT -> f
+    java.lang.String TAG -> g
+    boolean DEBUG -> h
+    int initiator_token -> i
+    int ssrc -> j
+    android.os.Bundle rinfo1 -> k
+    android.os.Bundle rinfo2 -> l
+    java.lang.String name -> m
+    int lastSentSequenceNr -> n
+    int firstReceivedSequenceNumber -> o
+    int lastReceivedSequenceNumber -> p
+    long latency -> q
+    boolean isConnected -> r
+    long receiverFeedbackTimeout -> s
+    long lastMessageTime -> t
+    long timeDifference -> u
+    boolean isInitiator -> v
+    boolean syncStarted -> w
+    boolean primarySyncComplete -> x
+    int syncCount -> y
+    long lastPacketReceivedTime -> z
+    1:1:void <init>():97:97 -> <init>
+    2:60:void <init>():46:104 -> <init>
+    1:1:int access$000(com.disappointedpig.midi.MIDIStream):44:44 -> a
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Lcom/disappointedpig/midi/b;)I"}
+    2:2:void access$100(com.disappointedpig.midi.MIDIStream,android.os.Bundle):44:44 -> a
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Lcom/disappointedpig/midi/b;Landroid/os/Bundle;)V"}
+    3:3:void access$1100(com.disappointedpig.midi.MIDIStream,int):44:44 -> a
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Lcom/disappointedpig/midi/b;I)V"}
+    4:4:void access$600(com.disappointedpig.midi.MIDIStream,com.disappointedpig.midi.MIDIControl):44:44 -> a
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Lcom/disappointedpig/midi/b;Lcom/disappointedpig/midi/MIDIControl;)V"}
+    5:5:boolean access$702(com.disappointedpig.midi.MIDIStream,boolean):44:44 -> a
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Lcom/disappointedpig/midi/b;Z)Z"}
+    6:23:void connect(android.os.Bundle):274:291 -> a
+    24:25:void cancelCheckConnectionFuture():329:330 -> a
+    26:26:int generateRandomInteger(int):368:368 -> a
+    27:52:void handleControlMessage(com.disappointedpig.midi.MIDIControl,android.os.Bundle):373:398 -> a
+    53:53:void handleControlMessage(com.disappointedpig.midi.MIDIControl,android.os.Bundle):391:391 -> a
+    54:54:void handleControlMessage(com.disappointedpig.midi.MIDIControl,android.os.Bundle):387:387 -> a
+    55:55:void handleControlMessage(com.disappointedpig.midi.MIDIControl,android.os.Bundle):383:383 -> a
+    56:57:void handleControlMessage(com.disappointedpig.midi.MIDIControl,android.os.Bundle):378:379 -> a
+    58:60:void sendMessage(com.disappointedpig.midi.MIDIMessage):551:553 -> a
+    61:71:void sendSynchronization(com.disappointedpig.midi.MIDIControl):583:593 -> a
+    72:104:void sendSynchronization(com.disappointedpig.midi.MIDIControl):588:620 -> a
+    105:107:void sendSynchronization(com.disappointedpig.midi.MIDIControl):610:612 -> a
+    108:109:void sendSynchronization(com.disappointedpig.midi.MIDIControl):602:603 -> a
+    110:141:void sendSynchronization(com.disappointedpig.midi.MIDIControl):597:628 -> a
+    1:1:int access$1000(com.disappointedpig.midi.MIDIStream):44:44 -> b
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Lcom/disappointedpig/midi/b;)I"}
+    2:2:void access$200(com.disappointedpig.midi.MIDIStream,android.os.Bundle):44:44 -> b
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Lcom/disappointedpig/midi/b;Landroid/os/Bundle;)V"}
+    3:17:boolean connectionMatch(android.os.Bundle):129:143 -> b
+    18:25:boolean connectionMatch(android.os.Bundle):140:147 -> b
+    26:27:void cancelConnectFuture():317:318 -> b
+    28:49:void handleInvitation(com.disappointedpig.midi.MIDIControl,android.os.Bundle):415:436 -> b
+    50:58:void resetSyncService(int):479:487 -> b
+    1:1:java.util.concurrent.ScheduledFuture access$1200(com.disappointedpig.midi.MIDIStream):44:44 -> c
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Lcom/disappointedpig/midi/b;)Ljava/util/concurrent/ScheduledFuture;"}
+    2:3:void cancelSyncFuture():323:324 -> c
+    4:27:void handleInvitationAccepted(com.disappointedpig.midi.MIDIControl,android.os.Bundle):441:464 -> c
+    28:39:void sendEnd(android.os.Bundle):567:578 -> c
+    1:1:long access$1300(com.disappointedpig.midi.MIDIStream):44:44 -> d
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Lcom/disappointedpig/midi/b;)J"}
+    2:9:void cleanupFailedConnection():306:313 -> d
+    10:14:void sendInvitation(android.os.Bundle):360:364 -> d
+    15:19:void handleInvitationRejected(com.disappointedpig.midi.MIDIControl,android.os.Bundle):492:496 -> d
+    1:1:int access$1400(com.disappointedpig.midi.MIDIStream):44:44 -> e
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Lcom/disappointedpig/midi/b;)I"}
+    2:4:void disconnect():335:337 -> e
+    5:12:void sendInvitationAccepted(android.os.Bundle):530:537 -> e
+    1:1:android.os.Bundle access$1500(com.disappointedpig.midi.MIDIStream):44:44 -> f
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Lcom/disappointedpig/midi/b;)Landroid/os/Bundle;"}
+    2:2:android.os.Bundle getRinfo1():355:355 -> f
+    3:5:void sendInvitationRejected(android.os.Bundle):543:545 -> f
+    1:16:void finalize():108:123 -> finalize
+    1:1:java.util.concurrent.ScheduledFuture access$1600(com.disappointedpig.midi.MIDIStream):44:44 -> g
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Lcom/disappointedpig/midi/b;)Ljava/util/concurrent/ScheduledFuture;"}
+    2:28:void handleEnd():500:526 -> g
+    1:1:java.util.concurrent.ScheduledFuture access$300(com.disappointedpig.midi.MIDIStream):44:44 -> h
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Lcom/disappointedpig/midi/b;)Ljava/util/concurrent/ScheduledFuture;"}
+    2:7:void resetCheckConnectionService():469:474 -> h
+    1:1:int access$400(com.disappointedpig.midi.MIDIStream):44:44 -> i
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Lcom/disappointedpig/midi/b;)I"}
+    2:3:void sendEnd():561:562 -> i
+    1:1:boolean access$500(com.disappointedpig.midi.MIDIStream):44:44 -> j
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Lcom/disappointedpig/midi/b;)Z"}
+    2:5:void sendSyncComplete():266:269 -> j
+    1:1:boolean access$700(com.disappointedpig.midi.MIDIStream):44:44 -> k
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Lcom/disappointedpig/midi/b;)Z"}
+    2:10:void shutdown():341:349 -> k
+    1:1:int access$800(com.disappointedpig.midi.MIDIStream):44:44 -> l
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Lcom/disappointedpig/midi/b;)I"}
+    1:1:void access$900(com.disappointedpig.midi.MIDIStream):44:44 -> m
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Lcom/disappointedpig/midi/b;)V"}
+com.disappointedpig.midi.MIDIStream$1 -> com.disappointedpig.midi.b$a:
+# {"id":"sourceFile","fileName":"MIDIStream.java"}
+    int[] $SwitchMap$com$disappointedpig$midi$MIDIControl$AppleMIDICommand -> a
+    1:1:void <clinit>():375:375 -> <clinit>
+com.disappointedpig.midi.MIDIStream$CheckConnectionTask -> com.disappointedpig.midi.b$b:
+# {"id":"sourceFile","fileName":"MIDIStream.java"}
+    com.disappointedpig.midi.MIDIStream this$0 -> a
+      # {"id":"com.android.tools.r8.residualsignature","signature":"Lcom/disappointedpig/midi/b;"}
+    1:1:void <init>(com.disappointedpig.midi.MIDIStream):239:239 -> <init>
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Lcom/disappointedpig/midi/b;)V"}
+    2:2:void <init>(com.disappointedpig.midi.MIDIStream,com.disappointedpig.midi.MIDIStream$1):239:239 -> <init>
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Lcom/disappointedpig/midi/b;Lcom/disappointedpig/midi/b$a;)V"}
+    1:2:void shutdown():258:259 -> a
+    1:11:void run():243:253 -> run
+com.disappointedpig.midi.MIDIStream$MIDIConnectTask -> com.disappointedpig.midi.b$c:
+# {"id":"sourceFile","fileName":"MIDIStream.java"}
+    android.os.Bundle rinfo -> a
+    com.disappointedpig.midi.MIDIStream this$0 -> b
+      # {"id":"com.android.tools.r8.residualsignature","signature":"Lcom/disappointedpig/midi/b;"}
+    1:3:void <init>(com.disappointedpig.midi.MIDIStream):154:156 -> <init>
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Lcom/disappointedpig/midi/b;)V"}
+    4:4:void <init>(com.disappointedpig.midi.MIDIStream,com.disappointedpig.midi.MIDIStream$1):154:154 -> <init>
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Lcom/disappointedpig/midi/b;Lcom/disappointedpig/midi/b$a;)V"}
+    1:1:void setBundle(android.os.Bundle):158:158 -> a
+    2:3:void shutdown():188:189 -> a
+    1:16:void run():163:178 -> run
+com.disappointedpig.midi.MIDIStream$SyncTask -> com.disappointedpig.midi.b$d:
+# {"id":"sourceFile","fileName":"MIDIStream.java"}
+    android.os.Bundle rinfo -> a
+    com.disappointedpig.midi.MIDIStream this$0 -> b
+      # {"id":"com.android.tools.r8.residualsignature","signature":"Lcom/disappointedpig/midi/b;"}
+    1:3:void <init>(com.disappointedpig.midi.MIDIStream):193:195 -> <init>
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Lcom/disappointedpig/midi/b;)V"}
+    4:4:void <init>(com.disappointedpig.midi.MIDIStream,com.disappointedpig.midi.MIDIStream$1):193:193 -> <init>
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(Lcom/disappointedpig/midi/b;Lcom/disappointedpig/midi/b$a;)V"}
+    1:1:void setBundle(android.os.Bundle):198:198 -> a
+    2:3:void shutdown():234:235 -> a
+    1:27:void run():203:229 -> run
+com.disappointedpig.midi.RTPMessage -> com.disappointedpig.midi.RTPMessage:
+# {"id":"sourceFile","fileName":"RTPMessage.java"}
+    int version -> a
+    boolean padding -> b
+    boolean hasExtension -> c
+    int csrcCount -> d
+    boolean marker -> e
+    int payloadType -> f
+    int sequenceNumber -> g
+    int timestamp -> h
+    int ssrc -> i
+    byte[] payload -> j
+    int payload_length -> k
+    1:11:void <init>():9:19 -> <init>
+    1:19:com.disappointedpig.midi.utility.OutDataBuffer generatePayload():57:75 -> generatePayload
+    1:28:boolean parse(com.disappointedpig.midi.internal_events.PacketEvent):25:52 -> parse
+com.disappointedpig.midi.events.MIDIAddressBookEvent -> com.disappointedpig.midi.events.MIDIAddressBookEvent:
+# {"id":"sourceFile","fileName":"MIDIAddressBookEvent.java"}
+    1:1:void <init>():4:4 -> <init>
+com.disappointedpig.midi.events.MIDIConnectionEndEvent -> com.disappointedpig.midi.events.MIDIConnectionEndEvent:
+# {"id":"sourceFile","fileName":"MIDIConnectionEndEvent.java"}
+    1:2:void <init>(android.os.Bundle):8:9 -> <init>
+com.disappointedpig.midi.events.MIDIConnectionEstablishedEvent -> com.disappointedpig.midi.events.MIDIConnectionEstablishedEvent:
+# {"id":"sourceFile","fileName":"MIDIConnectionEstablishedEvent.java"}
+    1:2:void <init>(android.os.Bundle):8:9 -> <init>
+com.disappointedpig.midi.events.MIDIConnectionRequestAcceptedEvent -> com.disappointedpig.midi.events.MIDIConnectionRequestAcceptedEvent:
+# {"id":"sourceFile","fileName":"MIDIConnectionRequestAcceptedEvent.java"}
+    1:2:void <init>(android.os.Bundle):9:10 -> <init>
+com.disappointedpig.midi.events.MIDIConnectionRequestReceivedEvent -> com.disappointedpig.midi.events.MIDIConnectionRequestReceivedEvent:
+# {"id":"sourceFile","fileName":"MIDIConnectionRequestReceivedEvent.java"}
+    1:2:void <init>(android.os.Bundle):8:9 -> <init>
+com.disappointedpig.midi.events.MIDIConnectionRequestRejectedEvent -> com.disappointedpig.midi.events.MIDIConnectionRequestRejectedEvent:
+# {"id":"sourceFile","fileName":"MIDIConnectionRequestRejectedEvent.java"}
+    1:2:void <init>(android.os.Bundle):8:9 -> <init>
+com.disappointedpig.midi.events.MIDIConnectionSentRequestEvent -> com.disappointedpig.midi.events.MIDIConnectionSentRequestEvent:
+# {"id":"sourceFile","fileName":"MIDIConnectionSentRequestEvent.java"}
+    1:2:void <init>(android.os.Bundle):10:11 -> <init>
+com.disappointedpig.midi.events.MIDIReceivedEvent -> com.disappointedpig.midi.events.MIDIReceivedEvent:
+# {"id":"sourceFile","fileName":"MIDIReceivedEvent.java"}
+    1:2:void <init>(android.os.Bundle):9:10 -> <init>
+com.disappointedpig.midi.events.MIDISessionNameRegisteredEvent -> com.disappointedpig.midi.events.MIDISessionNameRegisteredEvent:
+# {"id":"sourceFile","fileName":"MIDISessionNameRegisteredEvent.java"}
+    1:1:void <init>():3:3 -> <init>
+com.disappointedpig.midi.events.MIDISessionStartEvent -> com.disappointedpig.midi.events.MIDISessionStartEvent:
+# {"id":"sourceFile","fileName":"MIDISessionStartEvent.java"}
+    1:1:void <init>():7:7 -> <init>
+com.disappointedpig.midi.events.MIDISessionStopEvent -> com.disappointedpig.midi.events.MIDISessionStopEvent:
+# {"id":"sourceFile","fileName":"MIDISessionStopEvent.java"}
+    1:1:void <init>():7:7 -> <init>
+com.disappointedpig.midi.events.MIDISyncronizationCompleteEvent -> com.disappointedpig.midi.events.MIDISyncronizationCompleteEvent:
+# {"id":"sourceFile","fileName":"MIDISyncronizationCompleteEvent.java"}
+    1:2:void <init>(android.os.Bundle):9:10 -> <init>
+com.disappointedpig.midi.events.MIDISyncronizationStartEvent -> com.disappointedpig.midi.events.MIDISyncronizationStartEvent:
+# {"id":"sourceFile","fileName":"MIDISyncronizationStartEvent.java"}
+    1:2:void <init>(android.os.Bundle):10:11 -> <init>
+com.disappointedpig.midi.internal_events.AddressBookReadyEvent -> com.disappointedpig.midi.internal_events.AddressBookReadyEvent:
+# {"id":"sourceFile","fileName":"AddressBookReadyEvent.java"}
+    1:1:void <init>():4:4 -> <init>
+com.disappointedpig.midi.internal_events.ConnectionEstablishedEvent -> com.disappointedpig.midi.internal_events.ConnectionEstablishedEvent:
+# {"id":"sourceFile","fileName":"ConnectionEstablishedEvent.java"}
+    1:2:void <init>(android.os.Bundle):8:9 -> <init>
+com.disappointedpig.midi.internal_events.ConnectionFailedEvent -> com.disappointedpig.midi.internal_events.ConnectionFailedEvent:
+# {"id":"sourceFile","fileName":"ConnectionFailedEvent.java"}
+    1:4:void <init>(com.disappointedpig.midi.MIDIFailCode,android.os.Bundle):13:16 -> <init>
+    5:8:void <init>(com.disappointedpig.midi.MIDIFailCode,android.os.Bundle,int):19:22 -> <init>
+com.disappointedpig.midi.internal_events.ListeningEvent -> com.disappointedpig.midi.internal_events.ListeningEvent:
+# {"id":"sourceFile","fileName":"ListeningEvent.java"}
+    1:1:void <init>():3:3 -> <init>
+com.disappointedpig.midi.internal_events.PacketEvent -> com.disappointedpig.midi.internal_events.PacketEvent:
+# {"id":"sourceFile","fileName":"PacketEvent.java"}
+    java.net.InetAddress address -> a
+    int port -> b
+    byte[] data -> c
+    int length -> d
+    1:5:void <init>(java.net.DatagramPacket):15:19 -> <init>
+    1:1:java.net.InetAddress getAddress():31:31 -> getAddress
+    1:1:byte[] getData():39:39 -> getData
+    1:1:int getLength():43:43 -> getLength
+    1:1:int getPort():35:35 -> getPort
+    1:3:android.os.Bundle getRInfo():24:26 -> getRInfo
+com.disappointedpig.midi.internal_events.PayloadControlEvent -> com.disappointedpig.midi.internal_events.PayloadControlEvent:
+# {"id":"sourceFile","fileName":"PayloadControlEvent.java"}
+    1:1:void <init>():3:3 -> <init>
+com.disappointedpig.midi.internal_events.PayloadMessageEvent -> com.disappointedpig.midi.internal_events.PayloadMessageEvent:
+# {"id":"sourceFile","fileName":"PayloadMessageEvent.java"}
+    1:1:void <init>():4:4 -> <init>
+com.disappointedpig.midi.internal_events.StreamConnectedEvent -> com.disappointedpig.midi.internal_events.StreamConnectedEvent:
+# {"id":"sourceFile","fileName":"StreamConnectedEvent.java"}
+    1:2:void <init>(int):8:9 -> <init>
+com.disappointedpig.midi.internal_events.StreamDisconnectEvent -> com.disappointedpig.midi.internal_events.StreamDisconnectEvent:
+# {"id":"sourceFile","fileName":"StreamDisconnectEvent.java"}
+    1:4:void <init>(int):11:14 -> <init>
+    5:8:void <init>(int,int):16:19 -> <init>
+    9:12:void <init>(int,android.os.Bundle):21:24 -> <init>
+    13:16:void <init>(int,int,android.os.Bundle):26:29 -> <init>
+com.disappointedpig.midi.internal_events.SyncronizeStartedEvent -> com.disappointedpig.midi.internal_events.SyncronizeStartedEvent:
+# {"id":"sourceFile","fileName":"SyncronizeStartedEvent.java"}
+    1:2:void <init>(android.os.Bundle):13:14 -> <init>
+com.disappointedpig.midi.internal_events.SyncronizeStoppedEvent -> com.disappointedpig.midi.internal_events.SyncronizeStoppedEvent:
+# {"id":"sourceFile","fileName":"SyncronizeStoppedEvent.java"}
+    1:2:void <init>(android.os.Bundle):8:9 -> <init>
+com.disappointedpig.midi.utility.DataBuffer -> com.disappointedpig.midi.utility.DataBuffer:
+# {"id":"sourceFile","fileName":"DataBuffer.java"}
+    byte[] bytes -> a
+    int bytesLength -> b
+    int streamPosition -> c
+    1:5:void <init>(byte[],int):11:15 -> <init>
+    1:1:void addToStreamPosition(int):31:31 -> addToStreamPosition
+    1:1:int getAndIncreaseStreamPositionByOne():27:27 -> getAndIncreaseStreamPositionByOne
+    1:1:byte[] getBytes():19:19 -> getBytes
+    1:1:int getBytesLength():23:23 -> getBytesLength
+    1:1:int getStreamPosition():35:35 -> getStreamPosition
+    1:1:byte[] slice(int):39:39 -> slice
+com.disappointedpig.midi.utility.DataBufferReader -> com.disappointedpig.midi.utility.DataBufferReader:
+# {"id":"sourceFile","fileName":"DataBufferReader.java"}
+    1:1:void <init>():6:6 -> <init>
+    1:1:int lengthOfCurrentString(com.disappointedpig.midi.utility.DataBuffer):22:22 -> lengthOfCurrentString
+    1:2:void moveToFourByteBoundry(com.disappointedpig.midi.utility.DataBuffer):33:34 -> moveToFourByteBoundry
+    1:2:int read16(com.disappointedpig.midi.utility.DataBuffer):9:10 -> read16
+    1:3:int read24(com.disappointedpig.midi.utility.DataBuffer):68:70 -> read24
+    1:1:int read8(com.disappointedpig.midi.utility.DataBuffer):63:63 -> read8
+    1:4:java.math.BigInteger readBigInteger(com.disappointedpig.midi.utility.DataBuffer,int):56:59 -> readBigInteger
+    1:2:java.lang.Integer readInteger(com.disappointedpig.midi.utility.DataBuffer):51:52 -> readInteger
+    1:5:java.lang.String readString(com.disappointedpig.midi.utility.DataBuffer):38:42 -> readString
+    1:5:java.lang.Long readUnsignedInteger(com.disappointedpig.midi.utility.DataBuffer):79:83 -> readUnsignedInteger
+    1:2:long readUnsignedInteger64(com.disappointedpig.midi.utility.DataBuffer):92:93 -> readUnsignedInteger64
+com.disappointedpig.midi.utility.DataBufferWriter -> com.disappointedpig.midi.utility.DataBufferWriter:
+# {"id":"sourceFile","fileName":"DataBufferWriter.java"}
+    1:1:void <init>():4:4 -> <init>
+com.disappointedpig.midi.utility.OutDataBuffer -> com.disappointedpig.midi.utility.OutDataBuffer:
+# {"id":"sourceFile","fileName":"OutDataBuffer.java"}
+    java.io.ByteArrayOutputStream stream -> a
+    java.nio.charset.Charset charset -> b
+    byte[] charByte -> c
+    byte[] shortBytes -> d
+    byte[] mediumBytes -> e
+    byte[] intBytes -> f
+    byte[] longintBytes -> g
+    1:8:void <init>():18:25 -> <init>
+    1:4:void alignStream():29:32 -> a
+    5:7:void writeUnderHandler(byte[]):84:86 -> a
+    8:14:void writeInteger16ToByteArray(int):113:119 -> a
+    15:31:void writeInteger64ToByteArray(long):141:157 -> a
+    1:4:void writeInteger24ToByteArray(int):129:132 -> b
+    1:9:void writeInteger32ToByteArray(int):100:108 -> c
+    1:2:void writeInteger8ToByteArray(int):124:125 -> d
+    1:1:byte[] toByteArray():161:161 -> toByteArray
+    1:1:void write(int):37:37 -> write
+    2:2:void write(java.lang.Float):41:41 -> write
+    3:3:void write(java.lang.Double):45:45 -> write
+    4:4:void write(java.lang.Integer):49:49 -> write
+    5:8:void write(java.lang.String):74:77 -> write
+    1:1:void write16(java.lang.Integer):53:53 -> write16
+    1:1:void write24(java.lang.Integer):61:61 -> write24
+    1:1:void write32(java.lang.Integer):65:65 -> write32
+    1:1:void write64(java.lang.Long):69:69 -> write64
+    1:1:void write8(java.lang.Integer):57:57 -> write8

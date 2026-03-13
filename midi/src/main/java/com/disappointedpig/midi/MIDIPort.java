@@ -31,7 +31,7 @@ class MIDIPort implements Runnable {
     private Queue<DatagramPacket> outboundQueue;
 //    private Queue<DatagramPacket> inboundQueue;
 
-    private boolean isListening = false;
+    private volatile boolean isListening = false;
 
     private static final int BUFFER_SIZE = 1536;
     private static final String TAG = "MIDIPort";
@@ -87,32 +87,32 @@ class MIDIPort implements Runnable {
     public void run() {
         while(isListening) {
             try {
-                selector.select();
+                selector.select(1000); // timeout to recheck isListening periodically
                 Set<SelectionKey> readyKeys = selector.selectedKeys();
-                if (readyKeys.isEmpty() ) {
-                    break;
-                } else {
-                    Iterator<SelectionKey> keyIter = readyKeys.iterator();
-                    while (keyIter.hasNext()) {
-                        SelectionKey key = keyIter.next();
-                        keyIter.remove();
-                        if(!key.isValid()) {
-                            continue;
-                        }
+                if (readyKeys.isEmpty()) {
+                    continue; // spurious wakeup or timeout - keep listening
+                }
+                Iterator<SelectionKey> keyIter = readyKeys.iterator();
+                while (keyIter.hasNext()) {
+                    SelectionKey key = keyIter.next();
+                    keyIter.remove();
+                    if(!key.isValid()) {
+                        continue;
+                    }
 
-                        if (key.isReadable()) {
-                            handleRead(key);
-                        }
-                        if (key.isWritable()) {
-                            handleWrite(key);
-                        }
+                    if (key.isReadable()) {
+                        handleRead(key);
+                    }
+                    if (key.isWritable()) {
+                        handleWrite(key);
                     }
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                if(isListening) {
+                    Log.e(TAG, "IO error in port " + port, e);
+                }
             }
         }
-
     }
 
     int getPort() {
@@ -145,18 +145,33 @@ class MIDIPort implements Runnable {
 
     void stop() {
         isListening = false;
+        selector.wakeup(); // wake up blocked select() so thread exits promptly
+        try {
+            outboundQueue.clear();
+            channel.close();
+            selector.close();
+        } catch (IOException e) {
+            Log.e(TAG, "Error closing port " + port, e);
+        }
     }
 
     private void handleRead(SelectionKey key) {
-//        Log.d("MIDIPort2","handleRead");
         DatagramChannel c = (DatagramChannel) key.channel();
         UDPBuffer b = (UDPBuffer) key.attachment();
         try {
             b.buffer.clear();
             b.socketAddress = c.receive(b.buffer);
-            EventBus.getDefault().post(new PacketEvent(new DatagramPacket(b.buffer.array(),b.buffer.capacity(),b.socketAddress)));
+            if(b.socketAddress != null) {
+                // Copy the buffer data so it's not overwritten by the next read
+                int length = b.buffer.position();
+                byte[] data = new byte[length];
+                System.arraycopy(b.buffer.array(), 0, data, 0, length);
+                EventBus.getDefault().post(new PacketEvent(new DatagramPacket(data, length, b.socketAddress)));
+            }
         } catch (IOException e) {
-            e.printStackTrace();
+            if(isListening) {
+                Log.e(TAG, "IO error reading on port " + port, e);
+            }
         }
     }
 

@@ -43,11 +43,11 @@ import static java.util.concurrent.TimeUnit.SECONDS;
    --------------------------------------------------------- */
 class MIDIStream {
 
-    int initiator_token = 0;
-    int ssrc = 0;
+    volatile int initiator_token = 0;
+    volatile int ssrc = 0;
 
-    private Bundle rinfo1 = null;
-    private Bundle rinfo2 = null;
+    private volatile Bundle rinfo1 = null;
+    private volatile Bundle rinfo2 = null;
 
     private String name = "";
 
@@ -55,19 +55,19 @@ class MIDIStream {
 
     int firstReceivedSequenceNumber = -1;
     int lastReceivedSequenceNumber = -1;
-    long latency = 0L;
+    volatile long latency = 0L;
 
-    private boolean isConnected = false;
+    private volatile boolean isConnected = false;
 
     long receiverFeedbackTimeout = 0L;
     long lastMessageTime = 0L;
-    private long timeDifference = 0L;
-    private boolean isInitiator = false;
-    private boolean syncStarted = false;
-    private boolean primarySyncComplete = false;
-    private int syncCount = 0;
+    private volatile long timeDifference = 0L;
+    private volatile boolean isInitiator = false;
+    private volatile boolean syncStarted = false;
+    private volatile boolean primarySyncComplete = false;
+    private volatile int syncCount = 0;
 
-    private long lastPacketReceivedTime = 0L;
+    private volatile long lastPacketReceivedTime = 0L;
 
     private ScheduledExecutorService connectService, syncService, checkConnectionService;
     private ScheduledFuture<?> connectFuture, syncFuture, checkConnectionFuture;
@@ -125,30 +125,24 @@ class MIDIStream {
     }
 
     public boolean connectionMatch(Bundle r) {
-        boolean match = false;
-        if(r != null && rinfo1 != null && rinfo2 != null) {
-            Log.d(TAG, "connectionMatch " + r.toString() + " ? " + rinfo1.toString() + "/" + rinfo2.toString());
+        if(r == null) return false;
+        Bundle r1 = rinfo1;
+        Bundle r2 = rinfo2;
+        if(r1 == null) return false;
 
-            if (rinfo1 == null || rinfo2 == null) {
-                return false;
+        String addr = r.getString(MIDIConstants.RINFO_ADDR);
+        if(addr == null) return false;
+
+        if (addr.equals(r1.getString(MIDIConstants.RINFO_ADDR))) {
+            int port = r.getInt(MIDIConstants.RINFO_PORT);
+            if (port == r1.getInt(MIDIConstants.RINFO_PORT)) {
+                return true;
             }
-
-            if (r.getString(com.disappointedpig.midi.MIDIConstants.RINFO_ADDR).equals(rinfo1.getString(com.disappointedpig.midi.MIDIConstants.RINFO_ADDR))) {
-                Log.d(TAG, "addr = addr " + r.getString(com.disappointedpig.midi.MIDIConstants.RINFO_ADDR));
-                if ((r.getInt(com.disappointedpig.midi.MIDIConstants.RINFO_PORT) == rinfo1.getInt(com.disappointedpig.midi.MIDIConstants.RINFO_PORT)) ||
-                        ((r.getInt(com.disappointedpig.midi.MIDIConstants.RINFO_PORT) == rinfo2.getInt(com.disappointedpig.midi.MIDIConstants.RINFO_PORT)))) {
-                    Log.d(TAG, "port = port " + r.getInt(com.disappointedpig.midi.MIDIConstants.RINFO_PORT));
-                    match = true;
-                } else {
-                    Log.d(TAG, "port != port ");
-
-                }
-            } else {
-                Log.d(TAG, "address != address ");
-
+            if (r2 != null && port == r2.getInt(MIDIConstants.RINFO_PORT)) {
+                return true;
             }
         }
-        return match;
+        return false;
     }
 
     private class MIDIConnectTask implements Runnable {
@@ -469,10 +463,11 @@ class MIDIStream {
         if(checkConnectionFuture != null) {
             checkConnectionFuture.cancel(true);
         }
+        lastPacketReceivedTime = System.currentTimeMillis();
 
         CheckConnectionTask t = new CheckConnectionTask();
-        checkConnectionFuture = checkConnectionService.scheduleAtFixedRate(t, 0, 30000, MILLISECONDS);
-
+        // Initial delay = connectionTimeoutMax so we don't false-trigger immediately
+        checkConnectionFuture = checkConnectionService.scheduleAtFixedRate(t, connectionTimeoutMax, 30000, MILLISECONDS);
     }
 
     private void resetSyncService(int time) {
@@ -498,32 +493,14 @@ class MIDIStream {
 
     private void handleEnd() {
         this.isConnected = false;
-        // shutdown sync
-        if(connectFuture != null && !connectFuture.isCancelled()) {
-            connectFuture.cancel(true);
+        cancelConnectFuture();
+        cancelSyncFuture();
+        cancelCheckConnectionFuture();
+
+        Bundle r1 = this.rinfo1;
+        if(r1 != null) {
+            EventBus.getDefault().post(new StreamDisconnectEvent(ssrc, (Bundle) r1.clone()));
         }
-        if(syncFuture != null && !syncFuture.isCancelled()) {
-            syncFuture.cancel(true);
-        }
-        if(checkConnectionFuture != null && !checkConnectionFuture.isCancelled()) {
-            checkConnectionFuture.cancel(true);
-        }
-//        if(MIDISession.getInstance().getAutoReconnect()) {
-//            Bundle rinfo = (Bundle) rinfo1.clone();
-//            rinfo1 = rinfo2 = null;
-//            sendInvitation(rinfo);
-//            syncStarted = false;
-//            syncFailCount = 0;
-//            syncCount = 0;
-//            this.isInitiator = false;
-//            connectFuture = null;
-//            checkConnectionFuture = null;
-//            syncFuture = null;
-//            primarySyncComplete = false;
-//            return;
-//        }
-//        EventBus.getDefault().post(new MIDIConnectionEndEvent(this.rinfo1));
-        EventBus.getDefault().post(new StreamDisconnectEvent(ssrc,(Bundle)this.rinfo1.clone()));
     }
 
     private void sendInvitationAccepted(Bundle rinfo) {
@@ -548,9 +525,11 @@ class MIDIStream {
 
 
     void sendMessage(MIDIMessage m) {
+        Bundle r2 = rinfo2;
+        if(r2 == null || !isConnected) return;
         this.lastSentSequenceNr = (this.lastSentSequenceNr + 1) % 0x10000;
         m.sequenceNumber = this.lastSentSequenceNr;
-        MIDISession.getInstance().sendUDPMessage(m, rinfo2);
+        MIDISession.getInstance().sendUDPMessage(m, r2);
     }
 
     void sendEnd() {
@@ -564,19 +543,21 @@ class MIDIStream {
     }
 
     private void sendEnd(Bundle rinfo) {
+        if(rinfo == null) return;
         Log.d(TAG,"send end "+rinfo.toString());
         MIDIControl message = new MIDIControl();
         message.createEnd(this.initiator_token, MIDISession.getInstance().ssrc, MIDISession.getInstance().bonjourName);
         MIDISession.getInstance().sendUDPMessage(message, rinfo);
 
-        if(isConnected) {
-            EventBus.getDefault().post(new StreamDisconnectEvent(ssrc, (Bundle)this.rinfo1.clone()));
-        }
-        else {
-            EventBus.getDefault().post(new StreamDisconnectEvent(ssrc, initiator_token, (Bundle)this.rinfo1.clone()));
+        Bundle r1 = this.rinfo1;
+        if(r1 != null) {
+            if (isConnected) {
+                EventBus.getDefault().post(new StreamDisconnectEvent(ssrc, (Bundle) r1.clone()));
+            } else {
+                EventBus.getDefault().post(new StreamDisconnectEvent(ssrc, initiator_token, (Bundle) r1.clone()));
+            }
         }
         isConnected = false;
-
     }
 
     private void sendSynchronization(MIDIControl inboundSyncMessage) {

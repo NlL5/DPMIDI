@@ -55,7 +55,8 @@ public class ConnectionManagerService extends Service implements DPMIDIForegroun
 
     public ConnectionManagerService() {
         Log.i(TAG, "--------------------------\n    init cms\n--------------------------\n");
-        wifiLock = ((WifiManager) DPMIDIApplication.getAppContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE)).createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "stagecaller:WIFILock");
+        int wifiMode = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) ? WifiManager.WIFI_MODE_FULL_LOW_LATENCY : WifiManager.WIFI_MODE_FULL_HIGH_PERF;
+        wifiLock = ((WifiManager) DPMIDIApplication.getAppContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE)).createWifiLock(wifiMode, "stagecaller:WIFILock");
         wakeLock = ((PowerManager) DPMIDIApplication.getAppContext().getSystemService(Context.POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "stagecaller:WakeLock");
 
         Process.setThreadPriority(Process.THREAD_PRIORITY_DEFAULT);
@@ -129,7 +130,11 @@ public class ConnectionManagerService extends Service implements DPMIDIForegroun
                 DPMIDIForeground.get().removeListener(this);
                 stopMIDI();
 //                EventBus.getDefault().unregister(this);
-                stopForeground(true);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    stopForeground(STOP_FOREGROUND_REMOVE);
+                } else {
+                    stopForeground(true);
+                }
                 stopSelf();
             } else if (intent.getAction().equals(Constants.ACTION.START_MIDI_ACTION)) {
                 Log.i(TAG, "Received START_MIDI_ACTION ");
@@ -156,7 +161,8 @@ public class ConnectionManagerService extends Service implements DPMIDIForegroun
 //        notificationIntent.setAction(Constants.ACTION.MAIN_ACTION);
 //        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 //
-//        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+//        int pendingFlags = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) ? PendingIntent.FLAG_IMMUTABLE : 0;
+//        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, pendingFlags);
 //
 ////        Intent startMIDIIntent = new Intent(this, ConnectionManagerService.class);
 ////        startMIDIIntent.setAction(Constants.ACTION.START_MIDI_ACTION);
@@ -168,7 +174,7 @@ public class ConnectionManagerService extends Service implements DPMIDIForegroun
 //
 //        Intent stopCMGRIntent = new Intent(this, ConnectionManagerService.class);
 //        stopCMGRIntent.setAction(Constants.ACTION.STOPCMGR_ACTION);
-//        PendingIntent pstopCMGRSIntent = PendingIntent.getService(this, 0, stopCMGRIntent, 0);
+//        PendingIntent pstopCMGRSIntent = PendingIntent.getService(this, 0, stopCMGRIntent, pendingFlags);
 //
 //
 //        Bitmap icon = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
@@ -198,7 +204,8 @@ public class ConnectionManagerService extends Service implements DPMIDIForegroun
         notificationIntent.setAction(Constants.ACTION.MAIN_ACTION);
         notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+        int pendingFlags = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) ? PendingIntent.FLAG_IMMUTABLE : 0;
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, pendingFlags);
 
 //        Intent startMIDIIntent = new Intent(this, ConnectionManagerService.class);
 //        startMIDIIntent.setAction(Constants.ACTION.START_MIDI_ACTION);
@@ -206,7 +213,7 @@ public class ConnectionManagerService extends Service implements DPMIDIForegroun
 
         Intent stopCMGRIntent = new Intent(this, ConnectionManagerService.class);
         stopCMGRIntent.setAction(Constants.ACTION.STOPCMGR_ACTION);
-        PendingIntent pstopCMGRSIntent = PendingIntent.getService(this, 0, stopCMGRIntent, 0);
+        PendingIntent pstopCMGRSIntent = PendingIntent.getService(this, 0, stopCMGRIntent, pendingFlags);
 
 //        Intent stopMIDIIntent = new Intent(this, ConnectionManagerService.class);
 //        stopMIDIIntent.setAction(Constants.ACTION.STOP_MIDI_ACTION);
@@ -335,6 +342,7 @@ public class ConnectionManagerService extends Service implements DPMIDIForegroun
                     Process.setThreadPriority(Process.THREAD_PRIORITY_DEFAULT);
 
                     stopMIDI();
+                    break;
                 case NOT_RUNNING:
                 case FAILED:
                 default:
@@ -457,7 +465,14 @@ public class ConnectionManagerService extends Service implements DPMIDIForegroun
      */
     protected String getLocalBluetoothName() {
         if (mBluetoothAdapter == null) {
-            mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                android.bluetooth.BluetoothManager bm = (android.bluetooth.BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+                if (bm != null) {
+                    mBluetoothAdapter = bm.getAdapter();
+                }
+            } else {
+                mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+            }
         }
         if (mBluetoothAdapter == null) {
             return "DPMIDI";

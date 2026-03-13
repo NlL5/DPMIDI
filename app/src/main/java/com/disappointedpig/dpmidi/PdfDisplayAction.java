@@ -4,16 +4,26 @@ import android.content.Context;
 
 import com.github.barteksc.pdfviewer.PDFView;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
+
+import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
+import java.security.KeyStore;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManagerFactory;
 
 public class PdfDisplayAction {
 
@@ -51,9 +61,27 @@ public class PdfDisplayAction {
             public void run() {
                 try {
                     downloadFile("https://cloud.flammenmeer.band/index.php/s/nzZLaMXj4BAjLGK/download/Tablet.pdf", file);
-                    configurator.defaultPage(currentPage).load();
+                    if (file.exists() && file.length() > 0) {
+                        // PDFView.load() must be called on the UI thread
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    pdfView.fromFile(file)
+                                            .swipeHorizontal(true)
+                                            .pageSnap(true)
+                                            .autoSpacing(true)
+                                            .pageFling(true)
+                                            .defaultPage(currentPage)
+                                            .load();
+                                } catch (Exception e) {
+                                    Log.e("PdfDisplayAction", "Error loading PDF", e);
+                                }
+                            }
+                        });
+                    }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Log.e("PdfDisplayAction", "Error downloading PDF", e);
                 }
             }
         });
@@ -90,26 +118,87 @@ public class PdfDisplayAction {
         return file;
     }
 
-    public static void downloadFile(String url, File outputFile) {
+    private static SSLContext createSSLContext() {
         try {
+            // Load the bundled Let's Encrypt root certificate
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            InputStream certInput = DPMIDIApplication.getAppContext().getResources().openRawResource(R.raw.lets_encrypt_isrg_root_x1);
+            X509Certificate ca = (X509Certificate) cf.generateCertificate(certInput);
+            certInput.close();
+
+            // Create a KeyStore with both system CAs and the bundled cert
+            KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+            ks.load(null, null);
+            ks.setCertificateEntry("letsencrypt", ca);
+
+            // Also add system CAs
+            TrustManagerFactory systemTmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            systemTmf.init((KeyStore) null);
+
+            // Create a combined KeyStore
+            KeyStore combined = KeyStore.getInstance(KeyStore.getDefaultType());
+            combined.load(null, null);
+            combined.setCertificateEntry("letsencrypt", ca);
+
+            // Add all system certs
+            javax.net.ssl.TrustManager[] systemTms = systemTmf.getTrustManagers();
+            if (systemTms.length > 0 && systemTms[0] instanceof javax.net.ssl.X509TrustManager) {
+                javax.net.ssl.X509TrustManager systemTm = (javax.net.ssl.X509TrustManager) systemTms[0];
+                for (X509Certificate cert : systemTm.getAcceptedIssuers()) {
+                    String alias = cert.getSubjectDN().getName().replaceAll("[^a-zA-Z0-9]", "_");
+                    try { combined.setCertificateEntry(alias, cert); } catch (Exception ignored) {}
+                }
+            }
+
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            tmf.init(combined);
+
+            SSLContext ctx = SSLContext.getInstance("TLS");
+            ctx.init(null, tmf.getTrustManagers(), null);
+            return ctx;
+        } catch (Exception e) {
+            Log.e("PdfDisplayAction", "Failed to create SSLContext", e);
+            return null;
+        }
+    }
+
+    public static void downloadFile(String url, File outputFile) {
+        InputStream in = null;
+        FileOutputStream out = null;
+        HttpURLConnection conn = null;
+        try {
+            SSLContext sslContext = createSSLContext();
+            if (sslContext != null) {
+                // Fix broken SSL on older Android / emulator images:
+                // Set as JVM-wide default so URL.openConnection() can find a factory
+                SSLContext.setDefault(sslContext);
+                HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
+            }
+
             URL u = new URL(url);
-            URLConnection conn = u.openConnection();
-            int contentLength = conn.getContentLength();
+            conn = (HttpURLConnection) u.openConnection();
+            conn.setConnectTimeout(10000);
+            conn.setReadTimeout(30000);
 
-            DataInputStream stream = new DataInputStream(u.openStream());
+            in = new BufferedInputStream(conn.getInputStream());
+            out = new FileOutputStream(outputFile);
 
-            byte[] buffer = new byte[contentLength];
-            stream.readFully(buffer);
-            stream.close();
-
-            DataOutputStream fos = new DataOutputStream(new FileOutputStream(outputFile));
-            fos.write(buffer);
-            fos.flush();
-            fos.close();
-        } catch(FileNotFoundException e) {
-            return; // swallow a 404
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = in.read(buffer)) != -1) {
+                out.write(buffer, 0, bytesRead);
+            }
+            out.flush();
+            Log.d("PdfDisplayAction", "Download complete: " + outputFile.length() + " bytes");
         } catch (IOException e) {
-            return; // swallow a 404
+            Log.e("PdfDisplayAction", "Download failed: " + url, e);
+            if (outputFile.exists()) {
+                outputFile.delete();
+            }
+        } finally {
+            try { if (in != null) in.close(); } catch (IOException ignored) {}
+            try { if (out != null) out.close(); } catch (IOException ignored) {}
+            if (conn != null) conn.disconnect();
         }
     }
 

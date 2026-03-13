@@ -1,12 +1,12 @@
 package com.disappointedpig.midi;
 
 import android.annotation.TargetApi;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.net.ConnectivityManager;
-import android.net.DhcpInfo;
+
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkRequest;
 
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
@@ -14,8 +14,6 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.util.SparseArray;
-
 import com.disappointedpig.midi.events.MIDIAddressBookEvent;
 import com.disappointedpig.midi.events.MIDIConnectionEndEvent;
 import com.disappointedpig.midi.events.MIDIConnectionEstablishedEvent;
@@ -47,7 +45,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.greenrobot.eventbus.android.BuildConfig;
 
-import java.math.BigInteger;
+
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
@@ -59,15 +57,15 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static android.content.Context.WIFI_SERVICE;
 import static com.disappointedpig.midi.MIDIConstants.RINFO_ADDR;
 import static com.disappointedpig.midi.MIDIConstants.RINFO_FAIL;
 import static com.disappointedpig.midi.MIDIConstants.RINFO_PORT;
 import static com.disappointedpig.midi.MIDIConstants.RINFO_RECON;
-
-import androidx.collection.ArrayMap;
 
 public class MIDISession {
 
@@ -101,12 +99,12 @@ public class MIDISession {
         return midiSessionInstance;
     }
 
-    private Boolean shouldBeRunning = false;
-    private Boolean isRunning = false;
+    private volatile boolean shouldBeRunning = false;
+    private volatile boolean isRunning = false;
     private Context appContext = null;
-    private SparseArray<MIDIStream> streams;
-    private SparseArray<MIDIStream> pendingStreams;
-    private ArrayMap<String,Bundle> failedConnections;
+    private final Map<Integer, MIDIStream> streams = new ConcurrentHashMap<>();
+    private final Map<Integer, MIDIStream> pendingStreams = new ConcurrentHashMap<>();
+    private final Map<String, Bundle> failedConnections = new ConcurrentHashMap<>();
 
     public String bonjourName = Build.MODEL;
     public InetAddress bonjourHost = null;
@@ -117,15 +115,15 @@ public class MIDISession {
     public int port;
     public int ssrc;
     private int readyState;
-    private Boolean registered_eb = false;
-    private Boolean published_bonjour = false;
-    private Boolean initialized = false;
-    private Boolean started = false;
+    private volatile boolean registered_eb = false;
+    private volatile boolean published_bonjour = false;
+    private volatile boolean initialized = false;
+    private volatile boolean started = false;
 
     private int lastMessageTime;
     private int rate;
-    private final long startTime;
-    private final long startTimeHR;
+    private long startTime;
+    private long startTimeHR;
 
     private MIDIPort controlChannel;
     private MIDIPort messageChannel;
@@ -179,21 +177,21 @@ public class MIDISession {
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
-//        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
-//
-//            this.bonjourHost = getWifiAddressNew();
-//        } else {
             this.bonjourHost = getWifiAddress();
-//        }
         this.bonjourPort = this.port;
+
+        // Reset timestamp base on each start for accurate sync
+        this.startTime = (System.currentTimeMillis() / 1000L) * (long)this.rate;
+        this.startTimeHR = System.nanoTime();
+
         controlChannel = MIDIPort.newUsing(this.port);
         controlChannel.start();
         messageChannel = MIDIPort.newUsing(this.port+1);
         messageChannel.start();
 
-        this.streams = new SparseArray<>(2);
-        this.pendingStreams = new SparseArray<>(2);
-        this.failedConnections = new ArrayMap<>(2);
+        this.streams.clear();
+        this.pendingStreams.clear();
+        this.failedConnections.clear();
         try {
             initializeResolveListener();
             registerService();
@@ -209,27 +207,44 @@ public class MIDISession {
 
 
     public void stop() {
-        if(streams != null) {
-            for (int i = 0; i < streams.size(); i++) {
-                streams.get(streams.keyAt(i)).sendEnd();
-            }
+        if(!isRunning) {
+            return;
         }
-        if(pendingStreams != null) {
-            for (int i = 0; i < pendingStreams.size(); i++) {
-                pendingStreams.get(pendingStreams.keyAt(i)).sendEnd();
-            }
+        isRunning = false;
+
+        for (MIDIStream s : streams.values()) {
+            try { s.sendEnd(); } catch (Exception e) { Log.e(TAG, "Error sending end to stream", e); }
         }
+        for (MIDIStream s : pendingStreams.values()) {
+            try { s.sendEnd(); } catch (Exception e) { Log.e(TAG, "Error sending end to pending stream", e); }
+        }
+
+        // Shutdown all streams properly
+        for (MIDIStream s : streams.values()) {
+            try { s.shutdown(); } catch (Exception e) { Log.e(TAG, "Error shutting down stream", e); }
+        }
+        for (MIDIStream s : pendingStreams.values()) {
+            try { s.shutdown(); } catch (Exception e) { Log.e(TAG, "Error shutting down pending stream", e); }
+        }
+        streams.clear();
+        pendingStreams.clear();
+        failedConnections.clear();
 
         if(controlChannel != null) {
             controlChannel.stop();
+            controlChannel = null;
         }
         if(messageChannel != null) {
             messageChannel.stop();
+            messageChannel = null;
         }
-        isRunning = false;
+
+        // Reset state so start() works again
+        started = false;
+        published_bonjour = false;
+
         shutdownNSDListener();
         EventBus.getDefault().post(new MIDISessionStopEvent());
-
     }
 
 
@@ -246,14 +261,15 @@ public class MIDISession {
         }
     }
 
-    public void connect(final Bundle rinfo) {
+    public synchronized void connect(final Bundle rinfo) {
         if(isRunning) {
             if(!isAlreadyConnected(rinfo)) {
                 Log.d(TAG,"opening connection to "+rinfo);
                 MIDIStream stream = new MIDIStream();
 
-                if(failedConnections.containsKey(rinfoToKey(rinfo)))  {
-                    Bundle reconnectRinfo = failedConnections.get(rinfoToKey(rinfo));
+                String key = rinfoToKey(rinfo);
+                if(failedConnections.containsKey(key))  {
+                    Bundle reconnectRinfo = failedConnections.get(key);
                     if(reconnectRinfo.getInt(RINFO_FAIL,0) > 3) {
                         Log.d(TAG,"failed more than 3 times...");
                         return;
@@ -281,22 +297,22 @@ public class MIDISession {
             s.sendEnd();
         } else {
             Log.e(TAG,"didn't find stream");
-
         }
     }
 
     public void disconnect(int remote_ssrc) {
         if(remote_ssrc != 0) {
-            streams.get(remote_ssrc).disconnect();
-            streams.get(remote_ssrc).shutdown();
-            streams.remove(remote_ssrc);
+            MIDIStream s = streams.get(remote_ssrc);
+            if(s != null) {
+                s.disconnect();
+                s.shutdown();
+                streams.remove(remote_ssrc);
+            }
         }
-
     }
 
     private MIDIStream getStream(Bundle rinfo) {
-        for (int i = 0; i < streams.size(); i++) {
-            MIDIStream s = streams.get(streams.keyAt(i));
+        for (MIDIStream s : streams.values()) {
             if(s.connectionMatch(rinfo)) {
                 return s;
             }
@@ -312,116 +328,100 @@ public class MIDISession {
         return autoReconnect;
     }
 
-    private Boolean isAlreadyConnected(Bundle rinfo) {
-        Log.d(TAG,"isAlreadyConnected "+pendingStreams.size()+" "+streams.size());
-        boolean existsInPendingStreams = false;
-        boolean existsInStreams = false;
-        Log.e(TAG,"checking pendingStreams... ("+pendingStreams.size()+") "+rinfo.toString());
-        for (int i = 0; i < pendingStreams.size(); i++) {
-            MIDIStream ps = pendingStreams.get(pendingStreams.keyAt(i));
-            if((ps != null) && ps.connectionMatch(rinfo)) {
-                existsInPendingStreams = true;
-                break;
+    private boolean isAlreadyConnected(Bundle rinfo) {
+        Log.d(TAG,"isAlreadyConnected pending:"+pendingStreams.size()+" streams:"+streams.size());
+        for (MIDIStream ps : pendingStreams.values()) {
+            if(ps != null && ps.connectionMatch(rinfo)) {
+                Log.d(TAG,"existsInPendingStreams: YES");
+                return true;
             }
         }
-
-        if(!existsInPendingStreams) {
-            for (int i = 0; i < streams.size(); i++) {
-                MIDIStream s = streams.get(streams.keyAt(i));
-                if(s == null) {
-                    Log.e(TAG,"error in isAlreadyConnected "+i+" rinfo "+rinfo.toString());
-                } else {
-                    Log.e(TAG,"checking streams...");
-                    if(streams.get(streams.keyAt(i)).connectionMatch(rinfo)) {
-                        existsInStreams = true;
-                    }
-                }
+        for (MIDIStream s : streams.values()) {
+            if(s != null && s.connectionMatch(rinfo)) {
+                Log.d(TAG,"existsInStreams: YES");
+                return true;
             }
         }
-        Log.d(TAG,"existsInPendingStreams:"+(existsInPendingStreams ? "YES" : "NO"));
-        Log.d(TAG,"existsInStreams:"+(existsInStreams ? "YES" : "NO"));
-        return (existsInPendingStreams || existsInStreams);
-//        for (int i = 0; i < streams.size(); i++) {
-////            streams.get(streams.keyAt(i)).sendMessage(message);
-////            String key = ((MIDIStream)streams.keyAt(i));
-////            Bundle b = (MIDIStream)streams. .getRinfo1();
-//            Bundle b = streams.get(streams.keyAt(i)).getRinfo1();
-//            if(b.getString(MIDIConstants.RINFO_ADDR).equals(rinfo.getString(MIDIConstants.RINFO_ADDR)) && b.getInt(MIDIConstants.RINFO_PORT) == rinfo.getInt(MIDIConstants.RINFO_PORT)) {
-//                return true;
-//            }
-//        }
-//        return false;
+        return false;
     }
 
     public void sendUDPMessage(MIDIControl control, Bundle rinfo) {
-        if(control != null && rinfo != null) {
-            Log.d("MIDISession", "sendUDPMessage:control " + rinfo.toString());
-
-            if (rinfo.getInt(com.disappointedpig.midi.MIDIConstants.RINFO_PORT) % 2 == 0) {
-                Log.d("MIDISession", "sendUDPMessage control 5004 rinfo:" + rinfo.toString());
-//            controlChannel.sendMidi(control, rinfo);
-                controlChannel.sendMidi(control, rinfo);
-            } else {
-                Log.d("MIDISession", "sendUDPMessage control 5005 rinfo:" + rinfo.toString());
-//            messageChannel.sendMidi(control, rinfo);
-                messageChannel.sendMidi(control, rinfo);
-            }
-        } else {
+        if(control == null || rinfo == null) {
             Log.e(TAG,"rinfo or control was null...");
+            return;
+        }
+        if(!isRunning) {
+            Log.e(TAG, "sendUDPMessage: session not running");
+            return;
+        }
+        MIDIPort cc = controlChannel;
+        MIDIPort mc = messageChannel;
+        if(cc == null || mc == null) {
+            Log.e(TAG, "sendUDPMessage: channels not ready");
+            return;
+        }
+        if (rinfo.getInt(MIDIConstants.RINFO_PORT) % 2 == 0) {
+            cc.sendMidi(control, rinfo);
+        } else {
+            mc.sendMidi(control, rinfo);
         }
     }
 
     public void sendUDPMessage(MIDIMessage m, Bundle rinfo) {
-        Log.d("MIDISession","sendUDPMessage:message "+rinfo.toString());
-        if(m != null && rinfo != null) {
-            if (rinfo.getInt(com.disappointedpig.midi.MIDIConstants.RINFO_PORT) % 2 == 0) {
-                Log.d("MIDISession", "sendUDPMessage message 5004 rinfo:" + rinfo.toString());
-                controlChannel.sendMidi(m, rinfo);
-            } else {
-                Log.d("MIDISession", "sendUDPMessage message 5004 rinfo:" + rinfo.toString());
-                messageChannel.sendMidi(m, rinfo);
-            }
+        if(m == null || rinfo == null) {
+            return;
+        }
+        if(!isRunning) {
+            return;
+        }
+        MIDIPort cc = controlChannel;
+        MIDIPort mc = messageChannel;
+        if(cc == null || mc == null) {
+            return;
+        }
+        if (rinfo.getInt(MIDIConstants.RINFO_PORT) % 2 == 0) {
+            cc.sendMidi(m, rinfo);
+        } else {
+            mc.sendMidi(m, rinfo);
         }
     }
 
     public void sendMessage(Bundle m) {
-        if(published_bonjour && streams.size() > 0) {
-//            Log.d("MIDISession", "sendMessage c:"+m.getInt("command",0x09)+" ch:"+m.getInt("channel",0)+" n:"+m.getInt("note",0)+" v:"+m.getInt("velocity",0));
-
+        if(published_bonjour && !streams.isEmpty()) {
             MIDIMessage message = new MIDIMessage();
             message.createNote(
-                    m.getInt(com.disappointedpig.midi.MIDIConstants.MSG_COMMAND,0x09),
-                    m.getInt(com.disappointedpig.midi.MIDIConstants.MSG_CHANNEL,0),
-                    m.getInt(com.disappointedpig.midi.MIDIConstants.MSG_NOTE,0),
-                    m.getInt(com.disappointedpig.midi.MIDIConstants.MSG_VELOCITY,0));
+                    m.getInt(MIDIConstants.MSG_COMMAND,0x09),
+                    m.getInt(MIDIConstants.MSG_CHANNEL,0),
+                    m.getInt(MIDIConstants.MSG_NOTE,0),
+                    m.getInt(MIDIConstants.MSG_VELOCITY,0));
             message.ssrc = this.ssrc;
 
-            for (int i = 0; i < streams.size(); i++) {
-                streams.get(streams.keyAt(i)).sendMessage(message);
+            for (MIDIStream s : streams.values()) {
+                s.sendMessage(message);
             }
         }
     }
 
     public void sendMessage(int note, int velocity) {
-        if(published_bonjour && streams.size() > 0) {
-//            Log.d("MIDISession", "note:" + note + " velocity:" + velocity);
-
+        if(published_bonjour && !streams.isEmpty()) {
             MIDIMessage message = new MIDIMessage();
             message.createNote(note, velocity);
             message.ssrc = this.ssrc;
 
-            for (int i = 0; i < streams.size(); i++) {
-                streams.get(streams.keyAt(i)).sendMessage(message);
+            for (MIDIStream s : streams.values()) {
+                s.sendMessage(message);
             }
         }
     }
 
-    // TODO : figure out what this is supposed to return... becuase I don't think this is right
-    // getNow returns a unix (long)timestamp
+    // Returns a timestamp in units of (1/rate) seconds since session start.
+    // Used for RTP MIDI synchronization.
     public long getNow() {
-        long hrtime = System.nanoTime()-this.startTimeHR;
-        long result = Math.round((hrtime / 1000L / 1000L / 1000L) * this.rate) ;
-        return result;
+        long hrtime = System.nanoTime() - this.startTimeHR;
+        // Avoid integer division truncation: compute (hrtime_ns * rate) / 1_000_000_000
+        // Split to avoid overflow: first convert ns to microseconds, then scale
+        long hrtimeMicros = hrtime / 1000L;
+        return (hrtimeMicros * this.rate) / 1_000_000L;
     }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
@@ -431,21 +431,16 @@ public class MIDISession {
         dumpAddressBook();
     }
 
-    // streamConnectedEvent is called when client initiates connection... ...
     @Subscribe(threadMode = ThreadMode.ASYNC)
     public void onStreamConnected(StreamConnectedEvent e) {
-        Log.d("MIDISession","StreamConnectedEvent");
-        Log.d(TAG,"get "+e.initiator_token+" from pendingStreams");
+        Log.d(TAG,"StreamConnectedEvent - get "+e.initiator_token+" from pendingStreams");
         MIDIStream stream = pendingStreams.get(e.initiator_token);
 
         if(stream != null) {
-            Log.d(TAG,"put "+e.initiator_token+" in  streams");
+            Log.d(TAG,"put ssrc:"+stream.ssrc+" in streams");
             streams.put(stream.ssrc, stream);
         }
-        Log.d(TAG,"remove "+e.initiator_token+" from pendingStreams");
-
-        pendingStreams.delete(e.initiator_token);
-//        EventBus.getDefault().post(new MIDIConnectionEstablishedEvent());
+        pendingStreams.remove(e.initiator_token);
     }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
@@ -478,55 +473,33 @@ public class MIDISession {
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     public void onPacketEvent(PacketEvent e) {
-        Log.d("MIDISession","PacketEvent packet from "+e.getAddress().getHostAddress()+":"+e.getPort());
+        if(!isRunning) return;
 
-        // try control first
         MIDIControl applecontrol = new MIDIControl();
         MIDIMessage message = new MIDIMessage();
 
         if(applecontrol.parse(e)) {
-            if(DEBUG) {
-                Log.d("MIDISession", "- parsed as apple control packet");
-            }
             if(applecontrol.isValid()) {
-//                applecontrol.dumppacket();
-
                 if(applecontrol.initiator_token != 0) {
                     MIDIStream pending = pendingStreams.get(applecontrol.initiator_token);
                     if (pending != null) {
-                        if(DEBUG) {
-                            Log.d("MIDISession", " - got pending stream by token");
-                        }
                         pending.handleControlMessage(applecontrol, e.getRInfo());
                         return;
                     }
                 }
-                // check if this applecontrol.ssrc is known stream
                 MIDIStream stream = streams.get(applecontrol.ssrc);
 
                 if(stream == null) {
-                    // else, check if this is an invitation
-                    //       create stream and tell stream to handle invite
                     if(DEBUG) {
-                        Log.d("MIDISession", "- create new stream "+applecontrol.ssrc);
+                        Log.d(TAG, "- create new stream "+applecontrol.ssrc);
                     }
                     stream = new MIDIStream();
                     streams.put(applecontrol.ssrc, stream);
-                } else {
-                    if(DEBUG) {
-                        Log.d("MIDISession", " - got existing stream by ssrc " + applecontrol.ssrc);
-                    }
-
-                }
-                if(DEBUG) {
-                    Log.d("MIDISession", "- pass control packet to stream");
                 }
 
                 stream.handleControlMessage(applecontrol, e.getRInfo());
             }
-            // control packet
         } else {
-//            Log.d("MIDISession","message?");
             message.parseMessage(e);
             if(message.isValid()) {
                 EventBus.getDefault().post(new MIDIReceivedEvent(message.toBundle()));
@@ -539,33 +512,22 @@ public class MIDISession {
         if(DEBUG) {
             Log.d(TAG,"onStreamDisconnectEvent - ssrc:"+e.stream_ssrc+" it:"+e.initiator_token+" #streams:"+streams.size()+" #pendstreams:"+pendingStreams.size());
         }
-        MIDIStream a = streams.get(e.stream_ssrc,null);
+        MIDIStream a = streams.get(e.stream_ssrc);
 
         if(a == null) {
             Log.d(TAG,"can't find stream with ssrc "+e.stream_ssrc);
         } else {
-            Bundle rinfo = (Bundle) a.getRinfo1().clone();
             a.shutdown();
-            streams.delete(e.stream_ssrc);
+            streams.remove(e.stream_ssrc);
             checkAddressBookForReconnect();
-
-//            if(rinfo.getBoolean(MIDIConstants.RINFO_RECON,false)) {
-//                Log.d(TAG,"will try reconnect to "+rinfo.getString(RINFO_ADDR));
-//                connect(rinfo);
-//            } else {
-//                Log.d(TAG,"will not reconnect to "+rinfo.getString(RINFO_ADDR));
-//            }
-//            if(autoReconnect) {
-//                connect(rinfo);
-//            }
         }
         if(e.initiator_token != 0) {
-            MIDIStream p = pendingStreams.get(e.initiator_token,null);
+            MIDIStream p = pendingStreams.get(e.initiator_token);
             if(p == null) {
                 Log.d(TAG,"can't find pending stream with IT "+e.initiator_token);
             } else {
                 p.shutdown();
-                pendingStreams.delete(e.initiator_token);
+                pendingStreams.remove(e.initiator_token);
             }
         }
         if(e.rinfo != null) {
@@ -597,7 +559,7 @@ public class MIDISession {
                 break;
 
         }
-        pendingStreams.delete(e.initiator_code);
+        pendingStreams.remove(e.initiator_code);
 
         String key = rinfoToKey(e.rinfo);
         if(failedConnections.containsKey(key)) {
@@ -655,84 +617,55 @@ public class MIDISession {
 //    }
 
     public InetAddress getWifiAddress() {
+        // Try modern ConnectivityManager API first (API 23+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            try {
+                ConnectivityManager cm = (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+                if (cm != null) {
+                    Network activeNetwork = cm.getActiveNetwork();
+                    if (activeNetwork != null) {
+                        android.net.LinkProperties lp = cm.getLinkProperties(activeNetwork);
+                        if (lp != null) {
+                            for (android.net.LinkAddress la : lp.getLinkAddresses()) {
+                                InetAddress addr = la.getAddress();
+                                if (!addr.isLoopbackAddress() && addr instanceof java.net.Inet4Address) {
+                                    Log.d(TAG, "WiFi address (modern): " + addr.getHostAddress() + "/" + la.getPrefixLength());
+                                    netmask = InetAddress.getByName(intToIp(prefixLengthToNetmaskInt(la.getPrefixLength())));
+                                    return addr;
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Modern network lookup failed, falling back", e);
+            }
+        }
+
+        // Fallback: iterate network interfaces
         try {
             if(appContext == null) {
                 return InetAddress.getByName("127.0.0.1");
             }
-            DhcpInfo dhcpInfo;
-            WifiManager wm = (WifiManager) appContext.getSystemService(WIFI_SERVICE);
-
-            dhcpInfo=wm.getDhcpInfo();
-
-            Log.d(TAG,"DNS 1: "+intToIp(dhcpInfo.dns1));
-            Log.d(TAG,"DNS 2: "+intToIp(dhcpInfo.dns2));
-            Log.d(TAG,"Gateway: "+intToIp(dhcpInfo.gateway));
-            Log.d(TAG,"ip Address: "+intToIp(dhcpInfo.ipAddress));
-            Log.d(TAG,"lease time: "+intToIp(dhcpInfo.leaseDuration));
-            Log.d(TAG,"mask: "+dhcpInfo.netmask);
-
-            Log.d(TAG,"server ip: "+intToIp(dhcpInfo.serverAddress));
-
-
-//
-//            vIpAddress="IP Address: "+intToIp(dhcpInfo.ipAddress);
-//            vLeaseDuration="Lease Time: "+String.valueOf(dhcpInfo.leaseDuration);
-//            vNetmask="Subnet Mask: "+intToIp(dhcpInfo.netmask);
-//            vServerAddress="Server IP: "+intToIp(dhcpInfo.serverAddress);
-
-
-            byte[] ipbytearray= BigInteger.valueOf(wm.getConnectionInfo().getIpAddress()).toByteArray();
-            reverseByteArray(ipbytearray);
-            if(ipbytearray.length != 4) {
-                return InetAddress.getByName("127.0.0.1");
-            }
-
             Enumeration<NetworkInterface> nis = NetworkInterface.getNetworkInterfaces();
+            if(nis == null) return InetAddress.getByName("127.0.0.1");
+
             while(nis.hasMoreElements()) {
                 NetworkInterface ni = nis.nextElement();
-                Iterator<InterfaceAddress> intAs = ni.getInterfaceAddresses().iterator();
-                while(intAs.hasNext()) {
-                    InterfaceAddress ia = intAs.next();
-                    Log.d(TAG," ia: "+ia.getAddress().getHostAddress());
-                    if(sameIP(ia.getAddress(),InetAddress.getByAddress(ipbytearray))) {
-                        Log.d(TAG, "same!!! " + ia.getAddress().getHostAddress() + "/" + ia.getNetworkPrefixLength());
-                        Log.d(TAG, "netmask: "+ intToIp(prefixLengthToNetmaskInt(ia.getNetworkPrefixLength())));
+                if(ni.isLoopback() || !ni.isUp()) continue;
+                for(InterfaceAddress ia : ni.getInterfaceAddresses()) {
+                    InetAddress addr = ia.getAddress();
+                    if(!addr.isLoopbackAddress() && addr instanceof java.net.Inet4Address) {
+                        Log.d(TAG, "WiFi address (fallback): " + addr.getHostAddress() + "/" + ia.getNetworkPrefixLength());
                         netmask = InetAddress.getByName(intToIp(prefixLengthToNetmaskInt(ia.getNetworkPrefixLength())));
+                        return addr;
                     }
                 }
-
-//                Enumeration<InetAddress> inetAs = ni.getInetAddresses();
-//                while(inetAs.hasMoreElements()) {
-//                    InetAddress addr = inetAs.nextElement();
-//                    Log.d(TAG, " ia: "+addr.getHostAddress());
-//                    if(sameIP(addr,InetAddress.getByAddress(ipbytearray))) {
-//                        Log.d(TAG,"same!!! "+ni.getDisplayName() + "  "+ni.toString());
-//
-//                    }
-//                }
-
             }
-
-//            NetworkInterface networkInterface = NetworkInterface.getByInetAddress(InetAddress.getByAddress(ipbytearray));
-//            for (InterfaceAddress address : networkInterface.getInterfaceAddresses()) {
-//
-//                    networkInterface.isLoopback()
-//                    Log.d(TAG, "network prefix: " + address.getNetworkPrefixLength());
-//            }
-
-//            if(ipbytearray != null && ipbytearray.length > 0) {
-//                Log.d(TAG, "new netmask: " + intToIp(prefixLengthToNetmaskInt(getNetmask(InetAddress.getByAddress(ipbytearray)))));
-//            }
-
-            return InetAddress.getByAddress(ipbytearray);
-        } catch (UnknownHostException e) {
-            return null;
-        } catch (SocketException e) {
-            e.printStackTrace();
-            return null;
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-            return null;
+            return InetAddress.getByName("127.0.0.1");
+        } catch (Exception e) {
+            Log.e(TAG, "getWifiAddress failed", e);
+            try { return InetAddress.getByName("127.0.0.1"); } catch (UnknownHostException ex) { return null; }
         }
     }
 
@@ -1150,59 +1083,53 @@ public class MIDISession {
         return true;
     }
 
-    private BroadcastReceiver wifiReceiver;
+    private ConnectivityManager.NetworkCallback networkCallback;
     private boolean networkListenerRegistered = false;
 
     public void setupNetworkListener() {
-
-//        if(this.wifiReceiver != null) {
-//            removeNetworkListener();
-//        }
         if(networkListenerRegistered) {
             removeNetworkListener();
         }
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-        this.wifiReceiver = new BroadcastReceiver() {
+        if(appContext == null) return;
+
+        ConnectivityManager cm = (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if(cm == null) return;
+
+        networkCallback = new ConnectivityManager.NetworkCallback() {
+            @Override
+            public void onAvailable(Network network) {
+                Log.d(TAG, "networkCallback - onAvailable");
+                if(shouldBeRunning && !isRunning) {
+                    start();
+                }
+            }
 
             @Override
-            public void onReceive(Context context, Intent intent) {
-                // Do whatever you need it to do when it receives the broadcast
-                // Example show a Toast message...
-//                showSuccessfulBroadcast();
-                Log.d(TAG, "wifiReceiver - "+intent.getAction());
-//                checkAddressBookForReconnect();
-                if(isOnline()) {
-                    Log.d(TAG,"network is online");
-                    if(shouldBeRunning && !isRunning) {
-                        start();
-                    }
-                } else {
-                    Log.d(TAG,"network not online");
-                    if(isRunning) {
-                        shouldBeRunning = true;
-                        stop();
-                    }
-//                    shouldBeRunning = true;
-//                    stop();
-//
+            public void onLost(Network network) {
+                Log.d(TAG, "networkCallback - onLost");
+                if(isRunning) {
+                    shouldBeRunning = true;
+                    stop();
                 }
-
             }
         };
 
-        if(appContext != null) {
-            appContext.registerReceiver(this.wifiReceiver, intentFilter);
-        }
+        NetworkRequest request = new NetworkRequest.Builder()
+                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                .build();
+        cm.registerNetworkCallback(request, networkCallback);
         networkListenerRegistered = true;
     }
 
     public void removeNetworkListener() {
-        if(appContext != null && wifiReceiver != null) {
+        if(appContext != null && networkCallback != null) {
             try {
-                appContext.unregisterReceiver(wifiReceiver);
+                ConnectivityManager cm = (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+                if(cm != null) {
+                    cm.unregisterNetworkCallback(networkCallback);
+                }
                 networkListenerRegistered = false;
-
             } catch (IllegalArgumentException e) {
                 e.printStackTrace();
             }
@@ -1212,11 +1139,17 @@ public class MIDISession {
     public boolean isOnline() {
         ConnectivityManager cm =
                 (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if(cm == null) return false;
 
-        Log.d(TAG,"isOnline? "+((cm.getActiveNetworkInfo() != null &&
-                cm.getActiveNetworkInfo().isConnectedOrConnecting()) ? "ON" : "OFF"));
-        return cm.getActiveNetworkInfo() != null &&
-                cm.getActiveNetworkInfo().isConnectedOrConnecting();
+        Network activeNetwork = cm.getActiveNetwork();
+        if(activeNetwork == null) {
+            Log.d(TAG, "isOnline? OFF");
+            return false;
+        }
+        NetworkCapabilities caps = cm.getNetworkCapabilities(activeNetwork);
+        boolean online = caps != null && caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+        Log.d(TAG, "isOnline? " + (online ? "ON" : "OFF"));
+        return online;
     }
 
 }

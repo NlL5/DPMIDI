@@ -7,7 +7,7 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.StrictMode;
+
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -93,9 +93,6 @@ public class MainActivity extends AppCompatActivity {
         EventBus.getDefault().register(this);
         MIDISession.getInstance().init(DPMIDIApplication.getAppContext());
 
-        //start cms
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(policy); // Quick fix: The ConnectionManagerService is run on the main thread, which is not allowed. A separated thread should be used!
         Intent startIntent = new Intent(MainActivity.this, ConnectionManagerService.class);
         startIntent.setAction(Constants.ACTION.STARTCMGR_ACTION);
         startService(startIntent);
@@ -222,7 +219,7 @@ public class MainActivity extends AppCompatActivity {
 
                 Intent intent = new Intent(MainActivity.this, AddressBook.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                startActivityForResult(intent, 1);
+                startActivity(intent);
             }
         });
 
@@ -259,13 +256,16 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onDestroy() {
+        EventBus.getDefault().unregister(this);
+        if(service != null) {
+            service.unregisterActivity(this);
+        }
+        try {
+            unbindService(svcConn);
+        } catch (IllegalArgumentException e) {
+            // service was not bound
+        }
         super.onDestroy();
-
-        // Deactivate updates to us so that we dont get callbacks no more.
-        service.unregisterActivity(this);
-
-        // Finally stop the service
-        unbindService(svcConn);
     }
 
     @Override
@@ -295,8 +295,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void unbindFromCMGRS() {
-        service.unregisterActivity(this);
-        unbindService(svcConn);
+        if(service != null) {
+            service.unregisterActivity(this);
+        }
+        try {
+            unbindService(svcConn);
+        } catch (IllegalArgumentException e) {
+            // not bound
+        }
     }
 
 

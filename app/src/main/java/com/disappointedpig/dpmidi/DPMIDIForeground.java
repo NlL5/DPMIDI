@@ -5,6 +5,7 @@ import android.app.Application;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import java.util.List;
@@ -26,7 +27,7 @@ public class DPMIDIForeground implements Application.ActivityLifecycleCallbacks 
     private static DPMIDIForeground instance;
 
     private boolean foreground = false, paused = true;
-    private Handler handler = new Handler();
+    private Handler handler = new Handler(Looper.getMainLooper());
     private List<Listener> listeners = new CopyOnWriteArrayList<Listener>();
     private Runnable check;
 
