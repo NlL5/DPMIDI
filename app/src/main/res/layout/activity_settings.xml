@@ -120,30 +120,6 @@
                     android:textOff="AUS" />
             </LinearLayout>
 
-            <!-- Reconnect Toggle -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:padding="12dp"
-                android:background="@drawable/status_card_background"
-                android:layout_marginBottom="8dp">
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/settings_reconnect_toggle"
-                    android:textColor="@color/textPrimary"
-                    android:textSize="16sp" />
-                <ToggleButton
-                    android:id="@+id/reconnectToggleButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textOn="AN"
-                    android:textOff="AUS" />
-            </LinearLayout>
-
             <!-- Divider -->
             <View
                 android:layout_width="match_parent"

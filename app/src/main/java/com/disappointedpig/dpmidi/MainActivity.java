@@ -20,7 +20,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
-import com.disappointedpig.midi.MIDIConstants;
 import com.disappointedpig.midi.MIDISession;
 import com.disappointedpig.midi.events.MIDIConnectionEndEvent;
 import com.disappointedpig.midi.events.MIDIConnectionEstablishedEvent;
@@ -153,19 +152,12 @@ public class MainActivity extends AppCompatActivity {
         updateConnectionUI();
         setStatus(R.string.status_searching, null, R.color.statusConnecting);
 
-        Bundle rinfo = new Bundle();
-        rinfo.putString(MIDIConstants.RINFO_ADDR, "10.209.1.175");
-        rinfo.putInt(MIDIConstants.RINFO_PORT, 5004);
-        rinfo.putBoolean(MIDIConstants.RINFO_RECON, sharedpreferences.getBoolean(Constants.PREF.RECONNECT_STATE_PREF, false));
-        MIDISession.getInstance().connect(rinfo);
+        // Connect to all address book entries that have reconnect enabled
+        MIDISession.getInstance().checkAddressBookForReconnect();
     }
 
     private void disconnect() {
-        Bundle rinfo = new Bundle();
-        rinfo.putString(MIDIConstants.RINFO_ADDR, "10.209.1.175");
-        rinfo.putInt(MIDIConstants.RINFO_PORT, 5004);
-        rinfo.putBoolean(MIDIConstants.RINFO_RECON, sharedpreferences.getBoolean(Constants.PREF.RECONNECT_STATE_PREF, false));
-        MIDISession.getInstance().disconnect(rinfo);
+        MIDISession.getInstance().disconnectAll();
 
         isConnected = false;
         isConnecting = false;

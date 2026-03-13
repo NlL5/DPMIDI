@@ -267,18 +267,7 @@ public class MIDISession {
                 Log.d(TAG,"opening connection to "+rinfo);
                 MIDIStream stream = new MIDIStream();
 
-                String key = rinfoToKey(rinfo);
-                if(failedConnections.containsKey(key))  {
-                    Bundle reconnectRinfo = failedConnections.get(key);
-                    if(reconnectRinfo.getInt(RINFO_FAIL,0) > 3) {
-                        Log.d(TAG,"failed more than 3 times...");
-                        return;
-                    }
-
-                    stream.connect(reconnectRinfo);
-                } else {
-                    stream.connect(rinfo);
-                }
+                stream.connect(rinfo);
                 Log.d(TAG,"put "+stream.initiator_token+" in pendingStreams");
                 pendingStreams.put(stream.initiator_token, stream);
             } else {
@@ -297,6 +286,13 @@ public class MIDISession {
             s.sendEnd();
         } else {
             Log.e(TAG,"didn't find stream");
+        }
+    }
+
+    public void disconnectAll() {
+        Log.d(TAG, "disconnectAll - " + streams.size() + " streams");
+        for (MIDIStream s : streams.values()) {
+            s.sendEnd();
         }
     }
 
@@ -468,6 +464,9 @@ public class MIDISession {
         }
         EventBus.getDefault().post(new MIDIConnectionEstablishedEvent(e.rinfo));
         addToAddressBook(e.rinfo);
+        // Clear fail counter on successful connection
+        String key = rinfoToKey(e.rinfo);
+        failedConnections.remove(key);
 
     }
 
@@ -561,20 +560,51 @@ public class MIDISession {
         }
         pendingStreams.remove(e.initiator_code);
 
-        String key = rinfoToKey(e.rinfo);
+        // Normalize to base (control) port for fail tracking
+        Bundle failRinfo = (Bundle) e.rinfo.clone();
+        int rawPort = failRinfo.getInt(RINFO_PORT, 5004);
+        if (rawPort % 2 != 0) {
+            failRinfo.putInt(RINFO_PORT, rawPort - 1);
+        }
+        String key = rinfoToKey(failRinfo);
+
+        int failCount;
         if(failedConnections.containsKey(key)) {
             Bundle r = failedConnections.get(key);
-            int fail = r.getInt(RINFO_FAIL,0);
-            r.putInt(RINFO_FAIL,fail+1);
+            failCount = r.getInt(RINFO_FAIL,0) + 1;
+            r.putInt(RINFO_FAIL, failCount);
             failedConnections.put(key,r);
             Log.d(TAG," rinfo: "+r.toString());
         } else {
-            e.rinfo.putInt(RINFO_FAIL,1);
-            failedConnections.put(key, e.rinfo);
-            Log.d(TAG," rinfo: "+e.rinfo.toString());
-
+            failCount = 1;
+            failRinfo.putInt(RINFO_FAIL, failCount);
+            failedConnections.put(key, failRinfo);
+            Log.d(TAG," rinfo: "+failRinfo.toString());
         }
-        checkAddressBookForReconnect();
+
+        // After 3 failures, reset counter and wait 20s before retrying
+        final int delay;
+        if (failCount >= 3) {
+            failedConnections.remove(key);
+            delay = 20;
+            Log.d(TAG, "Reconnect cycle done, retrying in " + delay + "s for " + key);
+        } else {
+            delay = failCount * 5;
+            Log.d(TAG, "Scheduling reconnect in " + delay + "s (attempt " + failCount + ")");
+        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(delay * 1000L);
+                } catch (InterruptedException ignored) {
+                    return;
+                }
+                if (isRunning) {
+                    checkAddressBookForReconnect();
+                }
+            }
+        }).start();
     }
 
 //    @TargetApi(21)

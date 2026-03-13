@@ -14,6 +14,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedSelectorException;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -107,6 +108,9 @@ class MIDIPort implements Runnable {
                         handleWrite(key);
                     }
                 }
+            } catch (ClosedSelectorException e) {
+                // Selector was closed during stop() - exit gracefully
+                break;
             } catch (IOException e) {
                 if(isListening) {
                     Log.e(TAG, "IO error in port " + port, e);
@@ -146,6 +150,11 @@ class MIDIPort implements Runnable {
     void stop() {
         isListening = false;
         selector.wakeup(); // wake up blocked select() so thread exits promptly
+        try {
+            thread.join(3000); // wait for run loop to exit
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
         try {
             outboundQueue.clear();
             channel.close();

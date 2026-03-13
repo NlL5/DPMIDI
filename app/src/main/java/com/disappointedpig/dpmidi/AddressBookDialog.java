@@ -69,7 +69,7 @@ public class AddressBookDialog extends AppCompatDialogFragment {
         if(originalEntry != null) {
             isEditing = true;
             title = "Eintrag bearbeiten";
-            currentEntry = originalEntry;
+            currentEntry = (Bundle) originalEntry.clone();
         } else {
             currentEntry = blankEntry();
         }

@@ -32,7 +32,7 @@ public class SettingsActivity extends AppCompatActivity {
     private IServiceFunctions service = null;
     private SharedPreferences sharedpreferences;
 
-    ToggleButton cmServiceToggle, midiSessionToggle, backgroundToggleButton, reconnectToggleButton;
+    ToggleButton cmServiceToggle, midiSessionToggle, backgroundToggleButton;
     TextView midiStatusTextView;
     Button midiInviteButton, midiEndConnectionButton, testMIDIButton, testHeartbeat;
 
@@ -70,7 +70,6 @@ public class SettingsActivity extends AppCompatActivity {
         cmServiceToggle = findViewById(R.id.cmServiceToggleButton);
         midiSessionToggle = findViewById(R.id.midiSessionToggleButton);
         backgroundToggleButton = findViewById(R.id.backgroundToggleButton);
-        reconnectToggleButton = findViewById(R.id.reconnectToggleButton);
         midiStatusTextView = findViewById(R.id.midiStatus);
         midiInviteButton = findViewById(R.id.midiInviteButton);
         midiEndConnectionButton = findViewById(R.id.midiEndConnectionButton);
@@ -106,31 +105,17 @@ public class SettingsActivity extends AppCompatActivity {
             }
         });
 
-        reconnectToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                sharedpreferences.edit().putBoolean(Constants.PREF.RECONNECT_STATE_PREF, isChecked).commit();
-            }
-        });
-
         midiInviteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Bundle rinfo = new Bundle();
-                rinfo.putString(MIDIConstants.RINFO_ADDR, "10.209.1.175");
-                rinfo.putInt(MIDIConstants.RINFO_PORT, 5004);
-                rinfo.putBoolean(MIDIConstants.RINFO_RECON, sharedpreferences.getBoolean(Constants.PREF.RECONNECT_STATE_PREF, false));
-                MIDISession.getInstance().connect(rinfo);
+                MIDISession.getInstance().checkAddressBookForReconnect();
             }
         });
 
         midiEndConnectionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Bundle rinfo = new Bundle();
-                rinfo.putString(MIDIConstants.RINFO_ADDR, "10.209.1.175");
-                rinfo.putInt(MIDIConstants.RINFO_PORT, 5004);
-                rinfo.putBoolean(MIDIConstants.RINFO_RECON, sharedpreferences.getBoolean(Constants.PREF.RECONNECT_STATE_PREF, false));
-                MIDISession.getInstance().disconnect(rinfo);
+                MIDISession.getInstance().disconnectAll();
             }
         });
 
@@ -157,7 +142,6 @@ public class SettingsActivity extends AppCompatActivity {
         }
         midiSessionToggle.setChecked(sharedpreferences.getBoolean(Constants.PREF.MIDI_STATE_PREF, true));
         backgroundToggleButton.setChecked(sharedpreferences.getBoolean(Constants.PREF.BACKGROUND_STATE_PREF, true));
-        reconnectToggleButton.setChecked(sharedpreferences.getBoolean(Constants.PREF.RECONNECT_STATE_PREF, false));
     }
 
     @Override
