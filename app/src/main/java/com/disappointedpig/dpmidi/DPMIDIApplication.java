@@ -27,7 +27,7 @@ public class DPMIDIApplication extends Application {
 
     public boolean getRunInBackground() {
         SharedPreferences sharedpreferences = DPMIDIApplication.getAppContext().getSharedPreferences("SCPreferences", Context.MODE_PRIVATE);
-        return sharedpreferences.getBoolean(Constants.PREF.BACKGROUND_STATE_PREF,false);
+        return sharedpreferences.getBoolean(Constants.PREF.BACKGROUND_STATE_PREF,true);
     }
     public static Context getAppContext() {
         return DPMIDIApplication.context;

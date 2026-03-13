@@ -53,7 +53,8 @@
             android:layout_height="wrap_content"
             android:padding="16dp"
             android:gravity="center|center_horizontal"
-            android:text="no address book entries\nclick the buton below to create\nadd to the address book"
+            android:text="Keine Einträge im Adressbuch.\nTippe auf den Button unten,\num einen neuen Eintrag anzulegen."
+            android:textColor="@color/textSecondary"
             />
 
 

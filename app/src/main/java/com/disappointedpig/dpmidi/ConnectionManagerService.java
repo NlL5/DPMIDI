@@ -285,7 +285,7 @@ public class ConnectionManagerService extends Service implements DPMIDIForegroun
         Log.d(TAG, "check MIDI");
         SharedPreferences sharedpreferences = DPMIDIApplication.getAppContext().getSharedPreferences("SCPreferences", Context.MODE_PRIVATE);
         if (sharedpreferences != null) {
-            Boolean midiPref = sharedpreferences.getBoolean(Constants.PREF.MIDI_STATE_PREF, false);
+            Boolean midiPref = sharedpreferences.getBoolean(Constants.PREF.MIDI_STATE_PREF, true);
             if (midiPref && MIDIState == NOT_RUNNING) {
                 startMIDI();
                 Log.d(TAG, "--- start MIDI");

@@ -1,15 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="0dp"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
+    android:fillViewport="true"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.disappointedpig.dpmidi.MainActivity"
     tools:showIn="@layout/activity_main">
@@ -17,149 +12,108 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="CMS on/off"
-            />
-        <ToggleButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="CMService"
-            android:id="@+id/cmServiceToggleButton"
-            android:checked="false"
-            />
-        <ToggleButton
-            android:id="@+id/backgroundToggleButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="false"
-            android:text="Background"
-            android:textOff="Run in Background: OFF"
-            android:textOn="Run in Background: ON" />
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="MIDI on/off:"
-            />
-        <ToggleButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="MIDIService"
-            android:id="@+id/midiSessionToggleButton"
-            android:checked="false"
-            />
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="not running"
-            android:id="@+id/midiStatus"/>
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="Reconnect on/off:"
-            />
-        <ToggleButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Reconnect"
-            android:id="@+id/reconnectToggleButton"
-            android:checked="false"
-            />
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="..."
-            android:id="@+id/reconnectStatus"/>
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:gravity="center_horizontal">
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="Send Invite"
-            android:id="@+id/midiInviteButton"
-            android:checked="false"
-            />
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="Send End"
-            android:id="@+id/midiEndConnectionButton"
-            android:checked="false"
-            />
-
-    </LinearLayout>
-
-
-    <LinearLayout
+        <!-- Status Card -->
+        <LinearLayout
+            android:id="@+id/statusCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Send MIDI 41/127"
-            android:id="@+id/testMIDIButton"/>
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Test HB"
-            android:id="@+id/testheartbeat"/>
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="open address book"
-            android:id="@+id/openABButton"/>
+            android:orientation="vertical"
+            android:background="@drawable/status_card_background"
+            android:padding="24dp"
+            android:gravity="center"
+            android:layout_marginBottom="24dp">
 
+            <!-- Status indicator dot -->
+            <View
+                android:id="@+id/statusDot"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:background="@drawable/status_dot"
+                android:layout_marginBottom="12dp" />
+
+            <!-- Spinner (visible during connecting/syncing) -->
+            <ProgressBar
+                android:id="@+id/connectionSpinner"
+                style="?android:attr/progressBarStyle"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:visibility="gone"
+                android:layout_marginBottom="12dp"
+                android:indeterminateTint="@color/buttonPrimary" />
+
+            <!-- Main status text -->
+            <TextView
+                android:id="@+id/statusText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/status_disconnected"
+                android:textSize="22sp"
+                android:textColor="@color/textPrimary"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Sub-status / detail -->
+            <TextView
+                android:id="@+id/statusDetail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textSize="14sp"
+                android:textColor="@color/textSecondary"
+                android:visibility="gone" />
+
+            <!-- MIDI status line -->
+            <TextView
+                android:id="@+id/midiStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textSize="12sp"
+                android:textColor="@color/textSecondary"
+                android:layout_marginTop="8dp"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+        <!-- Connect / Disconnect Button -->
+        <Button
+            android:id="@+id/connectButton"
+            style="@style/MainButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="@drawable/btn_connect"
+            android:text="@string/btn_connect"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textAllCaps="false"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Address Book Button -->
+        <Button
+            android:id="@+id/openABButton"
+            style="@style/MainButton.Secondary"
+            android:text="@string/btn_address_book"
+            android:layout_marginBottom="12dp"
+            android:drawablePadding="8dp" />
+
+        <!-- Show Texts / PDF Button -->
         <Button
             android:id="@+id/openPdfButton"
+            style="@style/MainButton.Secondary"
+            android:text="@string/btn_show_texts"
+            android:layout_marginBottom="12dp"
+            android:drawablePadding="8dp" />
+
+        <!-- Hidden legacy elements needed by service binding -->
+        <TextView
+            android:id="@+id/midiConnectionStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:drawableLeft="@android:drawable/ic_media_play"
-            android:text="Open PDF View" />
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="no connection"
-            android:id="@+id/midiConnectionStatus"
-            />
-    </LinearLayout>
+            android:visibility="gone" />
 
-    <ListView
-        android:layout_width="wrap_content"
-        android:layout_height="300dp"
-        android:id="@+id/activity_listview"
-        android:layout_below="@+id/toggleButton"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:transcriptMode="alwaysScroll"
-        android:stackFromBottom="false"
-        />
-
-</LinearLayout>
+    </LinearLayout>
+</ScrollView>

@@ -1,6 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorPrimary">#1B2838</color>
+    <color name="colorPrimaryDark">#0F1923</color>
+    <color name="colorAccent">#4FC3F7</color>
+
+    <!-- Status colors -->
+    <color name="statusDisconnected">#B0BEC5</color>
+    <color name="statusConnecting">#FFB74D</color>
+    <color name="statusSyncing">#4FC3F7</color>
+    <color name="statusConnected">#66BB6A</color>
+    <color name="statusError">#EF5350</color>
+
+    <!-- Card/surface -->
+    <color name="cardBackground">#1E3044</color>
+    <color name="surfaceBackground">#152232</color>
+    <color name="textPrimary">#ECEFF1</color>
+    <color name="textSecondary">#90A4AE</color>
+
+    <!-- Buttons -->
+    <color name="buttonPrimary">#4FC3F7</color>
+    <color name="buttonSecondary">#37474F</color>
 </resources>

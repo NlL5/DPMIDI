@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:custom="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/cardBackground">
 
     <!--<com.disappointedpig.stagecaller.views.ui.HeaderWithText-->
     <!--android:id="@+id/headerOptions"-->
@@ -49,7 +50,7 @@
         android:layout_marginRight="0dp"
         android:layout_marginTop="8dp"
         custom:titleSwitch_Switch_State="true"
-        custom:titleSwitch_Switch_Dim="true"
+        custom:titleSwitch_Switch_Dim="false"
         custom:titleSwitch_Title_ResId="@string/title_ab_recon_switch"
         custom:titleSwitch_Switch_ResId="@+id/ab_recon_switch"
         />

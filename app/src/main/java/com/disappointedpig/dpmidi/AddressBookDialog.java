@@ -12,6 +12,7 @@ import android.view.View;
 
 import com.disappointedpig.dpmidi.ui.TitleWithEditText;
 import com.disappointedpig.dpmidi.ui.TitleWithSwitch;
+import com.disappointedpig.midi.MIDIAddressBookEntry;
 import com.disappointedpig.midi.MIDISession;
 
 import java.util.Locale;
@@ -54,20 +55,20 @@ public class AddressBookDialog extends AppCompatDialogFragment {
 
         LayoutInflater inflater = getActivity().getLayoutInflater();
 
-        final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog);
         @SuppressLint("InflateParams")
         View view = inflater.inflate(R.layout.dialog_addressbook_entry, null);
 
         builder.setView(view);
 
-        String title = "New Entry";
+        String title = "Neuer Eintrag";
         entryName = (TitleWithEditText) view.findViewById(R.id.abName);
         entryAddress = (TitleWithEditText) view.findViewById(R.id.abAddress);
         entryRecon = (TitleWithSwitch) view.findViewById(R.id.abReconnect);
 
         if(originalEntry != null) {
             isEditing = true;
-            title = "Edit Entry";
+            title = "Eintrag bearbeiten";
             currentEntry = originalEntry;
         } else {
             currentEntry = blankEntry();
@@ -88,7 +89,7 @@ public class AddressBookDialog extends AppCompatDialogFragment {
 
 
         builder.setMessage(title)
-                .setPositiveButton("Done", new DialogInterface.OnClickListener() {
+                .setPositiveButton("Fertig", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
 
                         currentEntry.putString(RINFO_NAME,entryName.getEditText());
@@ -100,11 +101,15 @@ public class AddressBookDialog extends AppCompatDialogFragment {
                                 currentEntry.putString(RINFO_ADDR, addressWithPortArray[0]);
                             }
                         }
+                        // When editing, delete old entry first (address/port may have changed)
+                        if (isEditing && originalEntry != null) {
+                            MIDISession.getInstance().deleteFromAddressBook(new MIDIAddressBookEntry(originalEntry));
+                        }
                         MIDISession.getInstance().addToAddressBook(currentEntry);
                         mListener.onAddressBookDialogPositiveClick(AddressBookDialog.this);
                     }
                 })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                .setNegativeButton("Abbrechen", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                     }
                 });
@@ -132,7 +137,7 @@ public class AddressBookDialog extends AppCompatDialogFragment {
         b.putString(RINFO_NAME,"");
         b.putString(RINFO_ADDR,"127.0.0.1");
         b.putInt(RINFO_PORT,5004);
-        b.putBoolean(RINFO_RECON,false);
+        b.putBoolean(RINFO_RECON,true);
 
         return b;
     }

@@ -84,10 +84,10 @@ public class AddressBook extends AppCompatActivity implements AddressBookDialog.
     public void onAddressBookEvent(AddressBookEvent event) {
         switch(event.getType()) {
             case TOUCHED:
-                Log.d(TAG,"touched ab entry - not implemented");
-//                AddressBookDialog abdialog = new AddressBookDialog();
-//                abdialog.setArguments(event.getEntry().rinfo());
-//                abdialog.show(getSupportFragmentManager(), AB_DIALOG_FRAGMENT_KEY);
+                Log.d(TAG,"touched ab entry - editing");
+                AddressBookDialog abdialog = new AddressBookDialog();
+                abdialog.setArguments(event.getEntry().rinfo());
+                abdialog.show(getSupportFragmentManager(), AB_DIALOG_FRAGMENT_KEY);
                 break;
             case DELETE:
                 Log.d(TAG,"delete ab entry - not implemented");

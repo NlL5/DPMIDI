@@ -1,12 +1,39 @@
 <resources>
     <string name="app_name">DPMIDI</string>
-    <string name="action_settings">Settings</string>
-    <string name="title_activity_address_book">AddressBook</string>
+    <string name="action_settings">Einstellungen</string>
+    <string name="title_activity_address_book">Adressbuch</string>
     <string name="missing_string_resource">MISSING STRING RESOURCE</string>
-    <!-- address book -->
+
+    <!-- Main screen -->
+    <string name="status_disconnected">Nicht verbunden</string>
+    <string name="status_connecting">Verbinde\u2026</string>
+    <string name="status_searching">Suche Gerät\u2026</string>
+    <string name="status_establishing">Verbindung wird hergestellt\u2026</string>
+    <string name="status_syncing">Synchronisierung\u2026</string>
+    <string name="status_connected">Verbunden</string>
+    <string name="status_connection_end">Verbindung getrennt</string>
+    <string name="status_invite_sent">Einladung gesendet\u2026</string>
+    <string name="status_error">Verbindungsfehler</string>
+
+    <string name="btn_connect">Jetzt verbinden</string>
+    <string name="btn_disconnect">Verbindung trennen</string>
+    <string name="btn_address_book">Adressbuch</string>
+    <string name="btn_show_texts">Songtexte manuell öffnen</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Einstellungen</string>
+    <string name="settings_cms_toggle">Verbindungsdienst</string>
+    <string name="settings_midi_toggle">MIDI-Session</string>
+    <string name="settings_background_toggle">Im Hintergrund laufen</string>
+    <string name="settings_reconnect_toggle">Automatisch neu verbinden</string>
+    <string name="settings_test_midi">Test MIDI senden</string>
+    <string name="settings_test_heartbeat">Test Heartbeat</string>
+    <string name="settings_midi_status">MIDI-Status</string>
+
+    <!-- Address book -->
     <string name="hint_ab_name"></string>
     <string name="title_ab_name">Name</string>
     <string name="hint_ab_address">127.0.0.1:5004</string>
-    <string name="title_ab_address">Address:Port</string>
-    <string name="title_ab_recon_switch">Reconnect</string>
+    <string name="title_ab_address">Adresse:Port</string>
+    <string name="title_ab_recon_switch">Automatisch wiederverbinden</string>
 </resources>
