@@ -38,11 +38,17 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+/**
+ * Main screen showing connection status and quick-access buttons.
+ * Delegates all MIDI operations to MIDISession and ConnectionManagerService.
+ * Receives EventBus events for connection state changes (connecting, syncing,
+ * established, disconnected) and updates the UI accordingly.
+ */
 public class MainActivity extends AppCompatActivity {
 
     private IServiceFunctions service = null;
-    private boolean isConnected = false;
-    private boolean isConnecting = false;
+    private boolean isConnected = false;   // true when at least one MIDI stream is established
+    private boolean isConnecting = false;  // true during invitation/sync phase
 
     // UI elements
     private View statusDot;
@@ -139,8 +145,8 @@ public class MainActivity extends AppCompatActivity {
         updateConnectionUI();
     }
 
+    /** Starts MIDI if needed, then triggers reconnect to all address book entries with auto-reconnect. */
     private void connect() {
-        // First ensure MIDI is started
         if (!sharedpreferences.getBoolean(Constants.PREF.MIDI_STATE_PREF, true)) {
             sharedpreferences.edit().putBoolean(Constants.PREF.MIDI_STATE_PREF, true).commit();
             Intent midiIntent = new Intent(MainActivity.this, ConnectionManagerService.class);

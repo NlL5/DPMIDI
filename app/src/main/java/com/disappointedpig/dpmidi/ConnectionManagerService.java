@@ -36,6 +36,12 @@ import static com.disappointedpig.dpmidi.ConnectionState.NOT_RUNNING;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
+/**
+ * Foreground service that manages the MIDI session lifecycle.
+ * Holds WiFi and wake locks to keep connections alive in background.
+ * Started/stopped via Intent actions (STARTCMGR, STOPCMGR, START_MIDI, STOP_MIDI).
+ * Adjusts thread priority based on foreground/background state for low-latency MIDI.
+ */
 public class ConnectionManagerService extends Service implements DPMIDIForeground.Listener {
 
     private static final String TAG = "CMS";
@@ -55,6 +61,7 @@ public class ConnectionManagerService extends Service implements DPMIDIForegroun
 
     public ConnectionManagerService() {
         Log.i(TAG, "--------------------------\n    init cms\n--------------------------\n");
+        // Use low-latency WiFi mode on Android 10+ for better real-time MIDI performance
         int wifiMode = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) ? WifiManager.WIFI_MODE_FULL_LOW_LATENCY : WifiManager.WIFI_MODE_FULL_HIGH_PERF;
         wifiLock = ((WifiManager) DPMIDIApplication.getAppContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE)).createWifiLock(wifiMode, "stagecaller:WIFILock");
         wakeLock = ((PowerManager) DPMIDIApplication.getAppContext().getSystemService(Context.POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "stagecaller:WakeLock");

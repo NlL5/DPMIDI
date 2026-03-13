@@ -67,6 +67,21 @@ import static com.disappointedpig.midi.MIDIConstants.RINFO_FAIL;
 import static com.disappointedpig.midi.MIDIConstants.RINFO_PORT;
 import static com.disappointedpig.midi.MIDIConstants.RINFO_RECON;
 
+/**
+ * Central singleton managing RTP MIDI sessions (RFC 4695 / AppleMIDI).
+ *
+ * Responsibilities:
+ * - Opens two UDP ports: control (even, default 5004) and MIDI data (odd, 5005)
+ * - Registers the service via mDNS/Bonjour so other devices can discover us
+ * - Manages MIDIStream instances (pending connections + established streams)
+ * - Persists an address book (WaspDB) for known peers with auto-reconnect
+ * - Handles connection failure tracking with backoff retry (3 attempts, then 20s pause)
+ * - Listens for network changes to auto-start/stop when WiFi comes/goes
+ *
+ * Communication pattern: uses GreenRobot EventBus throughout.
+ * Internal events (e.g. PacketEvent, ConnectionFailedEvent) stay within the midi module.
+ * Public events (e.g. MIDISessionStartEvent, MIDIConnectionEstablishedEvent) are consumed by the app layer.
+ */
 public class MIDISession {
 
     private static MIDISession midiSessionInstance;
@@ -76,7 +91,7 @@ public class MIDISession {
     private static boolean DEBUG = true;
 
     private WaspDb db;
-    private WaspHash midiAddressBook;
+    private WaspHash midiAddressBook;  // Persistent key-value store for known MIDI peers
     private WaspObserver observer;
 
 
@@ -99,12 +114,12 @@ public class MIDISession {
         return midiSessionInstance;
     }
 
-    private volatile boolean shouldBeRunning = false;
+    private volatile boolean shouldBeRunning = false;  // true when we want to run but network is unavailable
     private volatile boolean isRunning = false;
     private Context appContext = null;
-    private final Map<Integer, MIDIStream> streams = new ConcurrentHashMap<>();
-    private final Map<Integer, MIDIStream> pendingStreams = new ConcurrentHashMap<>();
-    private final Map<String, Bundle> failedConnections = new ConcurrentHashMap<>();
+    private final Map<Integer, MIDIStream> streams = new ConcurrentHashMap<>();         // keyed by remote SSRC
+    private final Map<Integer, MIDIStream> pendingStreams = new ConcurrentHashMap<>();   // keyed by initiator_token, moved to streams after handshake
+    private final Map<String, Bundle> failedConnections = new ConcurrentHashMap<>();     // keyed by "addr:port", tracks retry attempts
 
     public String bonjourName = Build.MODEL;
     public InetAddress bonjourHost = null;
@@ -184,6 +199,7 @@ public class MIDISession {
         this.startTime = (System.currentTimeMillis() / 1000L) * (long)this.rate;
         this.startTimeHR = System.nanoTime();
 
+        // RTP MIDI uses two UDP ports: even = control channel, odd = MIDI data channel
         controlChannel = MIDIPort.newUsing(this.port);
         controlChannel.start();
         messageChannel = MIDIPort.newUsing(this.port+1);
@@ -341,6 +357,7 @@ public class MIDISession {
         return false;
     }
 
+    // Routes UDP packets to the correct channel based on port parity (even=control, odd=data)
     public void sendUDPMessage(MIDIControl control, Bundle rinfo) {
         if(control == null || rinfo == null) {
             Log.e(TAG,"rinfo or control was null...");
@@ -470,6 +487,12 @@ public class MIDISession {
 
     }
 
+    /**
+     * Main packet dispatcher: every incoming UDP packet arrives here via EventBus.
+     * First tries to parse as AppleMIDI control message (invitation, sync, bye).
+     * If that fails, tries to parse as RTP MIDI data (notes, CC, etc.).
+     * Pending streams are matched by initiator_token; established streams by SSRC.
+     */
     @Subscribe(threadMode = ThreadMode.ASYNC)
     public void onPacketEvent(PacketEvent e) {
         if(!isRunning) return;
@@ -479,6 +502,7 @@ public class MIDISession {
 
         if(applecontrol.parse(e)) {
             if(applecontrol.isValid()) {
+                // Check pending streams first (connection still being established)
                 if(applecontrol.initiator_token != 0) {
                     MIDIStream pending = pendingStreams.get(applecontrol.initiator_token);
                     if (pending != null) {
@@ -486,6 +510,7 @@ public class MIDISession {
                         return;
                     }
                 }
+                // Then check established streams by remote SSRC
                 MIDIStream stream = streams.get(applecontrol.ssrc);
 
                 if(stream == null) {
@@ -538,6 +563,12 @@ public class MIDISession {
         }
     }
 
+    /**
+     * Handles connection failures with exponential backoff retry.
+     * Strategy: retry after 5s, 10s, 15s, then wait 20s and restart the cycle.
+     * Port is normalized to base (even) port for tracking, since failures can
+     * arrive on either the control port (5004) or data port (5005).
+     */
     @Subscribe
     public void onConnectionFailedEvent(ConnectionFailedEvent e) {
         Log.d(TAG,"onConnectionFailedEvent");
@@ -1043,6 +1074,11 @@ public class MIDISession {
         }
     }
 
+    /**
+     * Iterates all address book entries and initiates connections to those
+     * with auto-reconnect enabled. Called on session start, after disconnects,
+     * and on retry after failed connections.
+     */
     public void checkAddressBookForReconnect() {
         if(midiAddressBook != null) {
             HashMap<String, MIDIAddressBookEntry> hm = midiAddressBook.getAllData();

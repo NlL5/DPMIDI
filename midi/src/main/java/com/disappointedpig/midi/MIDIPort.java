@@ -23,6 +23,15 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+/**
+ * Non-blocking UDP socket handler for a single port.
+ * Uses Java NIO (DatagramChannel + Selector) for async reads/writes.
+ * Incoming packets are dispatched via EventBus as PacketEvent.
+ * Outgoing packets are queued and written when the channel is writable.
+ *
+ * Two instances are used per session: one for the control port (even)
+ * and one for the MIDI data port (odd).
+ */
 class MIDIPort implements Runnable {
     private int port;
 
@@ -151,7 +160,7 @@ class MIDIPort implements Runnable {
         isListening = false;
         selector.wakeup(); // wake up blocked select() so thread exits promptly
         try {
-            thread.join(3000); // wait for run loop to exit
+            thread.join(3000); // wait for run loop to exit before closing resources
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }

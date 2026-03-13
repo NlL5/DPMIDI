@@ -69,6 +69,8 @@ public class AddressBookDialog extends AppCompatDialogFragment {
         if(originalEntry != null) {
             isEditing = true;
             title = "Eintrag bearbeiten";
+            // Clone so modifications to currentEntry don't affect originalEntry —
+            // we need the original values intact to delete the old address book entry
             currentEntry = (Bundle) originalEntry.clone();
         } else {
             currentEntry = blankEntry();
