@@ -446,6 +446,8 @@ public class MIDISession {
     @Subscribe(threadMode = ThreadMode.ASYNC)
     public void onAddressBookReadyEvent(AddressBookReadyEvent event) {
         Log.d(TAG,"Addressbook ready");
+        // Notify UI that address book data is now available
+        EventBus.getDefault().post(new MIDIAddressBookEvent());
         checkAddressBookForReconnect();
         dumpAddressBook();
     }
@@ -596,6 +598,11 @@ public class MIDISession {
 
         }
         pendingStreams.remove(e.initiator_code);
+
+        if (e.rinfo == null) {
+            Log.d(TAG, "ConnectionFailedEvent with null rinfo, skipping retry");
+            return;
+        }
 
         // Normalize to base (control) port for fail tracking
         Bundle failRinfo = (Bundle) e.rinfo.clone();

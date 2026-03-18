@@ -2,12 +2,14 @@ package com.disappointedpig.dpmidi;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.disappointedpig.midi.MIDIAddressBookEntry;
 import com.disappointedpig.midi.MIDISession;
+import com.disappointedpig.midi.events.MIDIAddressBookEvent;
 import com.disappointedpig.midi.events.MIDIDeviceDiscoveredEvent;
 import com.disappointedpig.midi.events.MIDIDeviceLostEvent;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -75,6 +77,24 @@ public class AddressBook extends AppCompatActivity implements AddressBookDialog.
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_address_book, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_refresh) {
+            Log.d(TAG, "Refresh discovery");
+            MIDISession.getInstance().stopDiscovery();
+            MIDISession.getInstance().startDiscovery();
+            refreshDiscoveredDevices();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     protected void onDestroy() {
         MIDISession.getInstance().stopDiscovery();
         EventBus.getDefault().unregister(this);
@@ -139,6 +159,13 @@ public class AddressBook extends AppCompatActivity implements AddressBookDialog.
                 refreshAll();
                 break;
         }
+    }
+
+    /** WaspDB address book ready or changed — refresh list (handles async DB init). */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMIDIAddressBookEvent(MIDIAddressBookEvent event) {
+        Log.d(TAG, "Address book ready/changed, refreshing");
+        refreshAll();
     }
 
     /** Device discovered via mDNS — refresh list on main thread. */

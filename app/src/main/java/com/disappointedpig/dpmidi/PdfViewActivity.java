@@ -43,6 +43,8 @@ public class PdfViewActivity extends AppCompatActivity {
 
             @Subscribe(threadMode = ThreadMode.MAIN)
             public void onConnectionEstablishedEvent(MIDIConnectionEstablishedEvent event) {
+                // Only auto-open PDF when MainActivity is in foreground (not in Settings/AddressBook)
+                if (!mainActivity.isInForeground) return;
                 Intent intent = new Intent(DPMIDIApplication.getAppContext(), PdfViewActivity.class);
                 mainActivity.startActivity(intent);
             }

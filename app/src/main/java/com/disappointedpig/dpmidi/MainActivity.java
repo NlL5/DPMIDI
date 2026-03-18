@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
     private IServiceFunctions service = null;
     private boolean isConnected = false;   // true when at least one MIDI stream is established
     private boolean isConnecting = false;  // true during invitation/sync phase
+    boolean isInForeground = false; // true when MainActivity is visible
 
     // UI elements
     private View statusDot;
@@ -210,6 +211,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        isInForeground = true;
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        isInForeground = false;
     }
 
     @Override

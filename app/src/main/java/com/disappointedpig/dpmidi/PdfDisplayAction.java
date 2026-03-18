@@ -70,7 +70,13 @@ public class PdfDisplayAction {
             @Override
             public void run() {
                 try {
+                    long existingSize = file.exists() ? file.length() : -1;
                     downloadFile("https://cloud.flammenmeer.band/index.php/s/nzZLaMXj4BAjLGK/download/Tablet.pdf", file);
+                    // Skip reload if file hasn't changed (same size = same PDF)
+                    if (file.exists() && file.length() > 0 && file.length() == existingSize) {
+                        Log.d("PdfDisplayAction", "PDF unchanged, skipping reload");
+                        return;
+                    }
                     if (file.exists() && file.length() > 0) {
                         // PDFView.load() must be called on the UI thread
                         new Handler(Looper.getMainLooper()).post(new Runnable() {
