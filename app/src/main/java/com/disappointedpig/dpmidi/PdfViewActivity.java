@@ -51,14 +51,17 @@ public class PdfViewActivity extends AppCompatActivity {
             public void onMidiNoteEvent(MIDIReceivedEvent event) {
                 System.out.println("PdfViewActivity: got MIDI event. " + event.midi.toString());
 
+                if (action == null) {
+                    return;
+                }
+
                 MIDIMessage message = MIDIMessage.newUsing(event.midi);
-                if (message.getChannel() == 0 && (message.getCommand() == 0x9 || message.getCommand() == 0xB)) { // MIDI ON or CC, helper tool: http://www.xmlizer.net/hansLindauer/midiapp.html
-
+                if (message.getChannel() == 0 && message.getCommand() == 0x9) { // MIDI ON, helper tool: http://www.xmlizer.net/hansLindauer/midiapp.html
                     lastPage = message.getNote()*100 + message.getVelocity();
-
-                    if (action != null) {
-                        action.gotoPage(lastPage);
-                    }
+                    action.gotoPage(lastPage);
+                } else if (message.getChannel() == 0 && message.getCommand() == 0xB && message.getNote() >= 16 && message.getNote() <= 19) { // CC
+                    lastPage = (message.getNote() - 16)*100 + message.getVelocity();
+                    action.gotoPage(lastPage);
                 }
             }
         }

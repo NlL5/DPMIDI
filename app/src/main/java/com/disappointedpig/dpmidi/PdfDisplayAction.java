@@ -3,7 +3,11 @@ package com.disappointedpig.dpmidi;
 import android.content.Context;
 
 import com.github.barteksc.pdfviewer.PDFView;
+import com.github.barteksc.pdfviewer.listener.OnLoadCompleteListener;
+import com.disappointedpig.midi.MIDIConstants;
+import com.disappointedpig.midi.MIDISession;
 
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -47,7 +51,13 @@ public class PdfDisplayAction {
                 .pageSnap(true)
                 .autoSpacing(true)
                 .pageFling(true)
-                .defaultPage(currentPage);
+                .defaultPage(currentPage)
+                .onLoad(new OnLoadCompleteListener() {
+                    @Override
+                    public void loadComplete(int nbPages) {
+                        sendPlayReactivateCC();
+                    }
+                });
         if (file.exists()) {
             configurator.load(); // load and display on activity start
         }
@@ -73,6 +83,12 @@ public class PdfDisplayAction {
                                             .autoSpacing(true)
                                             .pageFling(true)
                                             .defaultPage(currentPage)
+                                            .onLoad(new OnLoadCompleteListener() {
+                                                @Override
+                                                public void loadComplete(int nbPages) {
+                                                    sendPlayReactivateCC();
+                                                }
+                                            })
                                             .load();
                                 } catch (Exception e) {
                                     Log.e("PdfDisplayAction", "Error loading PDF", e);
@@ -200,6 +216,20 @@ public class PdfDisplayAction {
             try { if (out != null) out.close(); } catch (IOException ignored) {}
             if (conn != null) conn.disconnect();
         }
+    }
+
+    /**
+     * Sends CC#24 (PLAY_REACTIVATE) on Channel 2 with value 63 when PDF is loaded.
+     * This signals the receiving system that the PDF view is ready.
+     */
+    private void sendPlayReactivateCC() {
+        Log.d("PdfDisplayAction", "PDF loaded, sending PLAY_REACTIVATE_CC");
+        Bundle msg = new Bundle();
+        msg.putInt(MIDIConstants.MSG_COMMAND, 0x0B);  // Control Change
+        msg.putInt(MIDIConstants.MSG_CHANNEL, 1);      // Channel 2 (0-indexed)
+        msg.putInt(MIDIConstants.MSG_NOTE, 24);        // CC#24 = PLAY_REACTIVATE
+        msg.putInt(MIDIConstants.MSG_VELOCITY, 63);    // Value 63
+        MIDISession.getInstance().sendMessage(msg);
     }
 
     public void gotoPage(int page) {
