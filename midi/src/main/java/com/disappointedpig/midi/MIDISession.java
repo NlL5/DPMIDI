@@ -17,6 +17,8 @@ import android.util.Log;
 import com.disappointedpig.midi.events.MIDIAddressBookEvent;
 import com.disappointedpig.midi.events.MIDIConnectionEndEvent;
 import com.disappointedpig.midi.events.MIDIConnectionEstablishedEvent;
+import com.disappointedpig.midi.events.MIDIDeviceDiscoveredEvent;
+import com.disappointedpig.midi.events.MIDIDeviceLostEvent;
 import com.disappointedpig.midi.events.MIDIReceivedEvent;
 import com.disappointedpig.midi.events.MIDISessionNameRegisteredEvent;
 import com.disappointedpig.midi.events.MIDISessionStartEvent;
@@ -150,6 +152,10 @@ public class MIDISession {
     private NsdServiceInfo serviceInfo;
 
     private boolean autoReconnect = false;
+
+    // mDNS discovery: maps service name → discovered device info
+    private final Map<String, MIDIAddressBookEntry> discoveredDevices = new ConcurrentHashMap<>();
+    private volatile boolean isDiscovering = false;
 
     public void init(Context context) {
         if(started) {
@@ -918,12 +924,176 @@ public class MIDISession {
                 if (mNsdManager != null) {
                     mNsdManager.unregisterService(mRegistrationListener);
                 }
-//            mNsdManager.stopServiceDiscovery(mDiscoveryListener);
             } catch (IllegalArgumentException e) {
-                // absorb stupid listener not registered exception...
+                // absorb listener not registered exception
+            }
+        }
+    }
+
+    // --------------------------------------------
+    // mDNS Discovery - find other RTP MIDI devices on the network
+    //
+
+    /**
+     * Starts mDNS discovery for _apple-midi._udp services.
+     * Found devices are posted as MIDIDeviceDiscoveredEvent / MIDIDeviceLostEvent.
+     * Our own service is filtered out by name.
+     */
+    public void startDiscovery() {
+        if (isDiscovering || mNsdManager == null) return;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) return;
+
+        discoveredDevices.clear();
+
+        mDiscoveryListener = new NsdManager.DiscoveryListener() {
+            @Override
+            public void onDiscoveryStarted(String serviceType) {
+                Log.d(TAG, "mDNS discovery started for " + serviceType);
+                isDiscovering = true;
+            }
+
+            @Override
+            public void onServiceFound(NsdServiceInfo serviceInfo) {
+                String serviceName = serviceInfo.getServiceName();
+                Log.d(TAG, "mDNS found: " + serviceName);
+
+                // Skip our own service
+                if (serviceName.equals(bonjourName)) {
+                    Log.d(TAG, "mDNS skipping own service: " + serviceName);
+                    return;
+                }
+
+                // Resolve to get IP and port
+                resolveDiscoveredService(serviceInfo);
+            }
+
+            @Override
+            public void onServiceLost(NsdServiceInfo serviceInfo) {
+                String serviceName = serviceInfo.getServiceName();
+                Log.d(TAG, "mDNS lost: " + serviceName);
+                discoveredDevices.remove(serviceName);
+                EventBus.getDefault().post(new MIDIDeviceLostEvent(serviceName));
+            }
+
+            @Override
+            public void onDiscoveryStopped(String serviceType) {
+                Log.d(TAG, "mDNS discovery stopped");
+                isDiscovering = false;
+            }
+
+            @Override
+            public void onStartDiscoveryFailed(String serviceType, int errorCode) {
+                Log.e(TAG, "mDNS discovery start failed: " + errorCode);
+                isDiscovering = false;
+            }
+
+            @Override
+            public void onStopDiscoveryFailed(String serviceType, int errorCode) {
+                Log.e(TAG, "mDNS discovery stop failed: " + errorCode);
+            }
+        };
+
+        mNsdManager.discoverServices(BONJOUR_TYPE, NsdManager.PROTOCOL_DNS_SD, mDiscoveryListener);
+    }
+
+    /**
+     * Resolves a discovered NSD service to obtain its IP address and port.
+     * Android's NSD resolve is serialized, so we create a fresh listener each time.
+     */
+    private void resolveDiscoveredService(final NsdServiceInfo serviceInfo) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) return;
+
+        NsdManager.ResolveListener resolveListener = new NsdManager.ResolveListener() {
+            @Override
+            public void onResolveFailed(NsdServiceInfo si, int errorCode) {
+                Log.e(TAG, "mDNS resolve failed for " + si.getServiceName() + ": " + errorCode);
+                // Error code 3 = FAILURE_ALREADY_ACTIVE, retry after short delay
+                if (errorCode == NsdManager.FAILURE_ALREADY_ACTIVE) {
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try { Thread.sleep(500); } catch (InterruptedException ignored) { return; }
+                            if (isDiscovering) {
+                                resolveDiscoveredService(serviceInfo);
+                            }
+                        }
+                    }).start();
+                }
+            }
+
+            @Override
+            public void onServiceResolved(NsdServiceInfo resolved) {
+                String name = resolved.getServiceName();
+                int port = resolved.getPort();
+                InetAddress host = resolved.getHost();
+                String address = host.getHostAddress();
+
+                // Prefer IPv4: if resolved address is IPv6, try to find an IPv4 alternative
+                if (!(host instanceof java.net.Inet4Address)) {
+                    try {
+                        String hostname = host.getHostName();
+                        Log.d(TAG, "mDNS resolved IPv6, looking up IPv4 for " + hostname);
+                        for (InetAddress alt : InetAddress.getAllByName(hostname)) {
+                            if (alt instanceof java.net.Inet4Address) {
+                                address = alt.getHostAddress();
+                                Log.d(TAG, "mDNS found IPv4 alternative: " + address);
+                                break;
+                            }
+                        }
+                    } catch (Exception e) {
+                        Log.d(TAG, "mDNS IPv4 lookup failed, keeping IPv6: " + address);
+                    }
+                }
+
+                Log.d(TAG, "mDNS resolved: " + name + " → " + address + ":" + port);
+
+                MIDIAddressBookEntry entry = new MIDIAddressBookEntry();
+                entry.setName(name);
+                entry.setAddress(address);
+                entry.setPort(port);
+                entry.setReconnect(true);
+
+                discoveredDevices.put(name, entry);
+                EventBus.getDefault().post(new MIDIDeviceDiscoveredEvent(name, address, port));
+            }
+        };
+
+        mNsdManager.resolveService(serviceInfo, resolveListener);
+    }
+
+    public void stopDiscovery() {
+        if (!isDiscovering || mNsdManager == null || mDiscoveryListener == null) return;
+        try {
+            mNsdManager.stopServiceDiscovery(mDiscoveryListener);
+        } catch (IllegalArgumentException e) {
+            Log.e(TAG, "stopDiscovery: listener not registered", e);
+        }
+        isDiscovering = false;
+    }
+
+    /**
+     * Returns discovered devices that are NOT already in the address book.
+     * Used by the AddressBook UI to show only new/unknown devices.
+     */
+    public ArrayList<MIDIAddressBookEntry> getDiscoveredDevices() {
+        ArrayList<MIDIAddressBookEntry> result = new ArrayList<>();
+        java.util.Set<String> addressBookKeys = new java.util.HashSet<>();
+
+        // Collect all address book keys for filtering
+        if (midiAddressBook != null) {
+            HashMap<String, MIDIAddressBookEntry> hm = midiAddressBook.getAllData();
+            if (hm != null) {
+                addressBookKeys.addAll(hm.keySet());
             }
         }
 
+        for (MIDIAddressBookEntry entry : discoveredDevices.values()) {
+            String key = entry.getAddress() + ":" + entry.getPort();
+            if (!addressBookKeys.contains(key)) {
+                result.add(entry);
+            }
+        }
+        return result;
     }
 
     public String version() {
@@ -1041,13 +1211,12 @@ public class MIDISession {
         Log.d(TAG,"getAllAddressBook");
         if(midiAddressBook != null) {
             HashMap<String, MIDIAddressBookEntry> hm = midiAddressBook.getAllData();
-            Log.d(TAG,"value count: "+hm.values().size());
-            Collection<MIDIAddressBookEntry> values = hm.values();
-            ArrayList<MIDIAddressBookEntry> list = new ArrayList<MIDIAddressBookEntry>(values);
-
-            return list;
+            if (hm != null) {
+                Log.d(TAG, "value count: " + hm.values().size());
+                return new ArrayList<>(hm.values());
+            }
         }
-        return null;
+        return new ArrayList<>();
     }
 
 //    // whenever a connect is called, check addressbook to see if we need to
@@ -1063,6 +1232,7 @@ public class MIDISession {
     private void dumpAddressBook() {
         if(midiAddressBook != null) {
             HashMap<String, MIDIAddressBookEntry> hm = midiAddressBook.getAllData();
+            if (hm == null) return;
             Log.d(TAG, "-----------------------------------------");
             for (String key : hm.keySet()) {
                 Log.d(TAG, " (" + key + ") : " + hm.get(key).getAddressPort());
@@ -1082,6 +1252,7 @@ public class MIDISession {
     public void checkAddressBookForReconnect() {
         if(midiAddressBook != null) {
             HashMap<String, MIDIAddressBookEntry> hm = midiAddressBook.getAllData();
+            if (hm == null) return;
             Log.d(TAG, "-----------------------------------------");
             for (String key : hm.keySet()) {
                 MIDIAddressBookEntry e = hm.get(key);
@@ -1202,19 +1373,29 @@ public class MIDISession {
         }
     }
 
+    @SuppressWarnings("deprecation")
     public boolean isOnline() {
         ConnectivityManager cm =
                 (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         if(cm == null) return false;
 
-        Network activeNetwork = cm.getActiveNetwork();
-        if(activeNetwork == null) {
-            Log.d(TAG, "isOnline? OFF");
-            return false;
+        // API 23+ (Marshmallow): use modern getActiveNetwork()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Network activeNetwork = cm.getActiveNetwork();
+            if (activeNetwork == null) {
+                Log.d(TAG, "isOnline? OFF");
+                return false;
+            }
+            NetworkCapabilities caps = cm.getNetworkCapabilities(activeNetwork);
+            boolean online = caps != null && caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+            Log.d(TAG, "isOnline? " + (online ? "ON" : "OFF"));
+            return online;
         }
-        NetworkCapabilities caps = cm.getNetworkCapabilities(activeNetwork);
-        boolean online = caps != null && caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
-        Log.d(TAG, "isOnline? " + (online ? "ON" : "OFF"));
+
+        // API 21-22 fallback: use deprecated getActiveNetworkInfo()
+        android.net.NetworkInfo ni = cm.getActiveNetworkInfo();
+        boolean online = ni != null && ni.isConnected();
+        Log.d(TAG, "isOnline? " + (online ? "ON" : "OFF") + " (legacy)");
         return online;
     }
 

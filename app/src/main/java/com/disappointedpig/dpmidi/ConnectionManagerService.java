@@ -385,7 +385,10 @@ public class ConnectionManagerService extends Service implements DPMIDIForegroun
         MIDISession midi = MIDISession.getInstance();
         if (midi != null) {
             midi.init(DPMIDIApplication.getAppContext());
-            midi.setBonjourName(getLocalBluetoothName());
+            // Use saved Bonjour name if available, otherwise fall back to Bluetooth/device name
+            SharedPreferences prefs = DPMIDIApplication.getAppContext().getSharedPreferences("SCPreferences", Context.MODE_PRIVATE);
+            String savedName = prefs.getString(Constants.PREF.BONJOUR_NAME_PREF, "");
+            midi.setBonjourName(savedName.isEmpty() ? getLocalBluetoothName() : savedName);
             midi.start();
             midiRunning = true;
             setMIDIState(ConnectionState.RUNNING);

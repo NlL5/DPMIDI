@@ -8,42 +8,13 @@
     tools:context="com.disappointedpig.dpmidi.AddressBook"
     tools:showIn="@layout/activity_address_book">
 
-    <com.disappointedpig.dpmidi.EmptyRecyclerView
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:id="@+id/abListRecyclerView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginBottom="0dp"
-        android:layout_marginEnd="0dp"
-        android:layout_marginLeft="0dp"
-        android:layout_marginRight="0dp"
-        android:layout_marginStart="0dp"
-        android:layout_marginTop="0dp"
-        android:clipChildren="true"
-        android:clipToPadding="false"
-        android:paddingBottom="40dp"
-        app:layoutManager="LinearLayoutManager"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0"
-        app:layout_constraintHorizontal_bias="0.0"
-        tools:context="com.disappointedpig.stagecaller.activities.MidiAddressBookActivity"
-        />
+    <!-- Discovered devices section (hidden when empty) -->
     <LinearLayout
-        android:id="@+id/list_empty_view"
+        android:id="@+id/discoveredSection"
         android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginBottom="0dp"
-        android:layout_marginLeft="0dp"
-        android:layout_marginRight="0dp"
-        android:layout_marginTop="0dp"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:textAlignment="center"
-        android:gravity="center_horizontal"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:visibility="gone"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -51,12 +22,77 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingLeft="8dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="4dp"
+            android:text="@string/discovered_devices_header"
+            android:textColor="@color/colorAccent"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/discoveredRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:nestedScrollingEnabled="false"
+            app:layoutManager="LinearLayoutManager" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="4dp"
+            android:background="@color/buttonSecondary" />
+
+    </LinearLayout>
+
+    <!-- Saved address book header -->
+    <TextView
+        android:id="@+id/savedHeader"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:paddingLeft="8dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="4dp"
+        android:text="@string/saved_devices_header"
+        android:textColor="@color/textSecondary"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/discoveredSection" />
+
+    <com.disappointedpig.dpmidi.EmptyRecyclerView
+        android:id="@+id/abListRecyclerView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clipChildren="true"
+        android:clipToPadding="false"
+        android:paddingBottom="40dp"
+        app:layoutManager="LinearLayoutManager"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/savedHeader" />
+
+    <LinearLayout
+        android:id="@+id/list_empty_view"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        android:textAlignment="center"
+        android:gravity="center_horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/savedHeader">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:padding="16dp"
             android:gravity="center|center_horizontal"
             android:text="Keine Einträge im Adressbuch.\nTippe auf den Button unten,\num einen neuen Eintrag anzulegen."
-            android:textColor="@color/textSecondary"
-            />
-
+            android:textColor="@color/textSecondary" />
 
     </LinearLayout>
 

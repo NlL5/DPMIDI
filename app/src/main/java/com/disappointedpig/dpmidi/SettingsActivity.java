@@ -6,8 +6,10 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
@@ -34,6 +36,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     ToggleButton cmServiceToggle, midiSessionToggle, backgroundToggleButton;
     TextView midiStatusTextView;
+    EditText bonjourNameEdit;
     Button midiInviteButton, midiEndConnectionButton, testMIDIButton, testHeartbeat;
 
     private ServiceConnection svcConn = new ServiceConnection() {
@@ -50,6 +53,7 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
         setContentView(R.layout.activity_settings);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -75,6 +79,24 @@ public class SettingsActivity extends AppCompatActivity {
         midiEndConnectionButton = findViewById(R.id.midiEndConnectionButton);
         testMIDIButton = findViewById(R.id.testMIDIButton);
         testHeartbeat = findViewById(R.id.testheartbeat);
+        bonjourNameEdit = findViewById(R.id.bonjourNameEdit);
+
+        // Load saved Bonjour name, default to current session name
+        String savedName = sharedpreferences.getString(Constants.PREF.BONJOUR_NAME_PREF, "");
+        if (savedName.isEmpty()) {
+            savedName = MIDISession.getInstance().bonjourName;
+        }
+        bonjourNameEdit.setText(savedName);
+
+        // Save on focus loss (user taps away from the field)
+        bonjourNameEdit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    saveBonjourName();
+                }
+            }
+        });
 
         cmServiceToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -148,6 +170,20 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         setButtonStates();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        saveBonjourName();
+    }
+
+    private void saveBonjourName() {
+        String name = bonjourNameEdit.getText().toString().trim();
+        if (!name.isEmpty()) {
+            sharedpreferences.edit().putString(Constants.PREF.BONJOUR_NAME_PREF, name).apply();
+            MIDISession.getInstance().setBonjourName(name);
+        }
     }
 
     @Override

@@ -26,11 +26,15 @@
     <string name="settings_midi_toggle">MIDI-Session</string>
     <string name="settings_background_toggle">Im Hintergrund laufen</string>
     <string name="settings_reconnect_toggle">Automatisch neu verbinden</string>
+    <string name="settings_bonjour_name">Gerätename (Bonjour)</string>
+    <string name="settings_bonjour_name_hint">z.B. Mein Android</string>
     <string name="settings_test_midi">Test MIDI senden</string>
     <string name="settings_test_heartbeat">Test Heartbeat</string>
     <string name="settings_midi_status">MIDI-Status</string>
 
     <!-- Address book -->
+    <string name="discovered_devices_header">Gefundene Geräte im Netzwerk</string>
+    <string name="saved_devices_header">Adressbuch</string>
     <string name="hint_ab_name"></string>
     <string name="title_ab_name">Name</string>
     <string name="hint_ab_address">127.0.0.1:5004</string>

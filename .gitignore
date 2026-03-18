@@ -30,3 +30,4 @@ midi_old
 projectFilesBackup
 build/
 *.aab
+*.hprof
